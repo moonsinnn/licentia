@@ -1,0 +1,207 @@
+import Link from "next/link"
+import { ChevronLeft, Key, Building2, Package, Clock, Users, Globe } from "lucide-react"
+
+interface LicenseViewPageProps {
+  params: {
+    id: string
+  }
+}
+
+export default function LicenseViewPage({ params }: LicenseViewPageProps) {
+  // we would fetch the license details by ID
+  const licenseId = params.id
+  
+  // Mock data for display purposes
+  const licenseData = {
+    id: licenseId,
+    license_key: "ABCD-1234-EFGH-5678",
+    organization: {
+      id: "1",
+      name: "Acme Corporation",
+    },
+    product: {
+      id: "1",
+      name: "Analytics Dashboard Pro",
+    },
+    allowed_domains: ["acme.com", "acmecorp.com"],
+    max_activations: 5,
+    current_activations: 2,
+    is_active: true,
+    expires_at: null,
+    created_at: "2023-09-15T00:00:00Z",
+  }
+
+  // Recent activations
+  const activations = [
+    {
+      id: "1",
+      domain: "app.acme.com",
+      ip_address: "192.168.1.1",
+      user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      is_active: true,
+      created_at: "2024-01-15T10:30:00Z",
+    },
+    {
+      id: "2",
+      domain: "dashboard.acmecorp.com",
+      ip_address: "192.168.1.2",
+      user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      is_active: true,
+      created_at: "2024-02-20T14:45:00Z",
+    }
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Link 
+          href="/licenses" 
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Licenses
+        </Link>
+        <div className="mt-2 flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">License Details</h1>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/licenses/${licenseId}/edit`}
+              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+            >
+              Edit License
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-6">
+          <div className="rounded-lg border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Key className="h-5 w-5" />
+                License Key
+              </h2>
+              <span className={`inline-flex h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                licenseData.is_active 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-red-100 text-red-800"
+              }`}>
+                {licenseData.is_active ? "Active" : "Inactive"}
+              </span>
+            </div>
+            <div className="font-mono text-lg bg-slate-50 dark:bg-slate-800 p-3 rounded-md mb-4">
+              {licenseData.license_key}
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                  <Building2 className="h-4 w-4" />
+                  Organization
+                </h3>
+                <Link 
+                  href={`/organizations/${licenseData.organization.id}`}
+                  className="text-primary hover:underline"
+                >
+                  {licenseData.organization.name}
+                </Link>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                  <Package className="h-4 w-4" />
+                  Product
+                </h3>
+                <Link 
+                  href={`/products/${licenseData.product.id}`}
+                  className="text-primary hover:underline"
+                >
+                  {licenseData.product.name}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Allowed Domains
+            </h2>
+            <div className="space-y-2">
+              {licenseData.allowed_domains.length > 0 ? (
+                licenseData.allowed_domains.map(domain => (
+                  <div key={domain} className="bg-slate-50 dark:bg-slate-800 p-2 rounded-md">
+                    {domain}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No domain restrictions</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-lg border p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Activations
+            </h2>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Current</h3>
+                <p className="text-2xl font-bold">{licenseData.current_activations}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Maximum</h3>
+                <p className="text-2xl font-bold">{licenseData.max_activations}</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-md font-medium">Recent Activations</h3>
+              {activations.map(activation => (
+                <div key={activation.id} className="border rounded-md p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-medium">{activation.domain}</div>
+                    <span className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      activation.is_active 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-red-100 text-red-800"
+                    }`}>
+                      {activation.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <div>IP: {activation.ip_address}</div>
+                    <div className="truncate" title={activation.user_agent}>
+                      UA: {activation.user_agent.substring(0, 40)}...
+                    </div>
+                    <div>
+                      Activated: {new Date(activation.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Timing Information
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
+                <p>{new Date(licenseData.created_at).toLocaleString()}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Expires</h3>
+                <p>{licenseData.expires_at ? new Date(licenseData.expires_at).toLocaleString() : "Never"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+} 
