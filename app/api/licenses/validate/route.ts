@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, validateLicense, serializeData } from '@/lib/db';
+import { prisma, validateLicense } from '@/lib/db';
 
 // Fallback validation function if the stored procedure fails
 async function validateLicenseFallback(licenseKey: string, domain: string) {

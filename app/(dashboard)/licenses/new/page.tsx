@@ -105,8 +105,6 @@ export default function NewLicensePage() {
         throw new Error(errorData.error || `API error: ${response.status}`);
       }
       
-      // Get the license data
-      const licenseData = await response.json();
       
       // Redirect to licenses page
       router.push("/licenses");

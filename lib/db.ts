@@ -16,7 +16,7 @@ export default prisma;
  * Helper function to serialize data with BigInt values to JSON
  * Also properly formats JSON fields
  */
-export function serializeData(data: any): any {
+export function serializeData(data: unknown): unknown {
   // First, handle BigInt serialization
   const jsonString = JSON.stringify(data, (key, value) => {
     // Handle BigInt values
@@ -212,7 +212,7 @@ export async function activateLicense(
       }
       
       // Otherwise reactivate it
-      const updatedActivation = await prisma.licenseActivation.update({
+      await prisma.licenseActivation.update({
         where: { id: existingActivation.id },
         data: { 
           is_active: true,
@@ -240,7 +240,7 @@ export async function activateLicense(
     }
     
     // Create new activation
-    const newActivation = await prisma.licenseActivation.create({
+    await prisma.licenseActivation.create({
       data: {
         license_id: license.id,
         domain,
@@ -289,7 +289,7 @@ export async function deactivateLicense(licenseKey: string, domain: string) {
     }
     
     // Deactivate the license
-    const updatedActivation = await prisma.licenseActivation.update({
+    await prisma.licenseActivation.update({
       where: { id: activation.id },
       data: { is_active: false },
     });

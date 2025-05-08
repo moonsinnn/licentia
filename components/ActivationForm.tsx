@@ -47,6 +47,7 @@ export default function ActivationForm({ licenseKey }: ActivationFormProps) {
         })
       }
     } catch (error) {
+      console.error('Activation error:', error);
       setResult({
         success: false,
         message: "Failed to connect to server",

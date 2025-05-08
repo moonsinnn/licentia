@@ -64,8 +64,9 @@ export default function OrganizationForm({ organization }: OrganizationFormProps
       
       // Refresh the page data
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'An error occurred')
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : 'An error occurred';
+      setError(error);
     } finally {
       setIsLoading(false)
     }

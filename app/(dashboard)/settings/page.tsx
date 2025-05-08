@@ -17,7 +17,7 @@ export default function SettingsPage() {
             Settings Coming Soon
           </h3>
           <p className="text-sm text-muted-foreground mt-2">
-            We're working on the settings page with the following features:
+            We&apos;re working on the settings page with the following features:
           </p>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-6">
             <SettingCard

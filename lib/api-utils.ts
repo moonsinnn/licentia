@@ -50,7 +50,7 @@ export async function getFromApi<T>(endpoint: string): Promise<T> {
 /**
  * Post data to an API endpoint with authentication
  */
-export async function postToApi<T>(endpoint: string, data: any): Promise<T> {
+export async function postToApi<T, D = Record<string, unknown>>(endpoint: string, data: D): Promise<T> {
   const response = await fetchWithAuth(endpoint, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -67,7 +67,7 @@ export async function postToApi<T>(endpoint: string, data: any): Promise<T> {
 /**
  * Put data to an API endpoint with authentication
  */
-export async function putToApi<T>(endpoint: string, data: any): Promise<T> {
+export async function putToApi<T, D = Record<string, unknown>>(endpoint: string, data: D): Promise<T> {
   const response = await fetchWithAuth(endpoint, {
     method: 'PUT',
     body: JSON.stringify(data),

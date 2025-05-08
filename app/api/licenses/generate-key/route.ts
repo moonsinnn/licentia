@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, generateLicenseKey } from '@/lib/db';
+import { NextResponse } from 'next/server';
+import { generateLicenseKey } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Generate a license key (function now uses JS implementation)
-    let licenseKey = await generateLicenseKey();
+    const licenseKey = await generateLicenseKey();
     
     return NextResponse.json({ 
       success: true, 

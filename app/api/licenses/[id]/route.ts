@@ -99,7 +99,14 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    interface UpdateData {
+      allowed_domains?: string[];
+      max_activations?: number;
+      is_active?: boolean;
+      expires_at?: Date | null;
+    }
+    
+    const updateData: UpdateData = {};
     if (allowed_domains !== undefined) updateData.allowed_domains = allowed_domains;
     if (max_activations !== undefined) updateData.max_activations = Number(max_activations);
     if (is_active !== undefined) updateData.is_active = !!is_active;

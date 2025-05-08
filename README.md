@@ -52,7 +52,7 @@ bunx prisma migrate dev
 
 6. Start the development server:
 ```bash
-bun dev
+bun run dev
 ```
 
 7. Open [http://localhost:3000](http://localhost:3000) in your browser

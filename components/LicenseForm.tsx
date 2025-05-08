@@ -53,11 +53,11 @@ export default function LicenseForm({ license, products = [], organizations = []
   // Load organization and product data if editing
   useEffect(() => {
     if (license) {
-      setFormData({
-        ...formData,
+      setFormData(prevData => ({
+        ...prevData,
         organization_id: license.organization_id,
         product_id: license.product_id,
-      })
+      }))
     }
   }, [license])
 
@@ -131,8 +131,9 @@ export default function LicenseForm({ license, products = [], organizations = []
       
       // Refresh the page data
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'An error occurred')
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : 'An error occurred';
+      setError(error);
     } finally {
       setIsLoading(false)
     }

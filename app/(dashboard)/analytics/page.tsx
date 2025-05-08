@@ -1,4 +1,4 @@
-import { BarChart, DollarSign, Clock, Activity } from "lucide-react"
+import { BarChart, Clock, Activity } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 
 interface AnalyticsData {
@@ -76,7 +76,7 @@ export default async function AnalyticsPage() {
         <div className="p-6">
           <h3 className="text-2xl font-semibold leading-none tracking-tight">Advanced Analytics Coming Soon</h3>
           <p className="text-sm text-muted-foreground mt-2">
-            We're working on advanced analytics features including:
+            We&apos;re working on advanced analytics features including:
           </p>
           <ul className="mt-4 space-y-2 text-sm">
             <li className="flex items-center">

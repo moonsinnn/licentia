@@ -78,7 +78,7 @@ export default async function LicenseEditPage({ params }: LicenseEditPageProps) 
     return (
       <div className="p-6 text-center">
         <h1 className="text-xl font-bold">License not found</h1>
-        <p className="mt-2 text-muted-foreground">The license you're trying to edit doesn't exist or you don't have permission to view it.</p>
+        <p className="mt-2 text-muted-foreground">The license you&apos;re trying to edit doesn&apos;t exist or you don&apos;t have permission to view it.</p>
         <Link 
           href="/licenses" 
           className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"

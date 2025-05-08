@@ -9,9 +9,36 @@ interface LicenseViewPageProps {
   }
 }
 
+interface LicenseActivation {
+  id: string | number;
+  license_id: string | number;
+  domain: string;
+  ip_address: string;
+  user_agent: string | null | undefined;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface License {
+  id: string | number;
+  license_key: string;
+  organization_id: string | number;
+  product_id: string | number;
+  allowed_domains: string[] | string;
+  max_activations: number;
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+  organization: { id: string | number; name: string };
+  product: { id: string | number; name: string };
+  license_activations: LicenseActivation[];
+}
+
 async function getLicenseData(id: string) {
   try {
-    const response = await getFromApi<{ license: any }>(`/api/licenses/${id}`);
+    const response = await getFromApi<{ license: License }>(`/api/licenses/${id}`);
     return response.license;
   } catch (error) {
     console.error('Error fetching license:', error);
@@ -27,7 +54,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
     return (
       <div className="p-6 text-center">
         <h1 className="text-xl font-bold">License not found</h1>
-        <p className="mt-2 text-muted-foreground">The license you're looking for doesn't exist or you don't have permission to view it.</p>
+        <p className="mt-2 text-muted-foreground">The license you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.</p>
         <Link 
           href="/licenses" 
           className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
@@ -41,12 +68,12 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
   
   // Format data for display
   const activations = licenseData.license_activations || [];
-  const currentActivations = activations.filter((act: any) => act.is_active).length;
+  const currentActivations = activations.filter((act: LicenseActivation) => act.is_active).length;
   
   // Ensure allowed_domains is an array
   const allowedDomains = Array.isArray(licenseData.allowed_domains) 
     ? licenseData.allowed_domains 
-    : (licenseData.allowed_domains ? JSON.parse(licenseData.allowed_domains) : []);
+    : (licenseData.allowed_domains ? JSON.parse(licenseData.allowed_domains as string) : []);
 
   return (
     <div className="space-y-6">
@@ -159,7 +186,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             <div className="space-y-4">
               <h3 className="text-md font-medium">Recent Activations</h3>
               {activations.length > 0 ? (
-                activations.map((activation: any) => (
+                activations.map((activation: LicenseActivation) => (
                   <div key={activation.id} className="border rounded-md p-3">
                     <div className="flex justify-between items-start mb-2">
                       <div className="font-medium">{activation.domain}</div>
@@ -173,7 +200,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
                     </div>
                     <div className="text-xs text-muted-foreground">
                       <div>IP: {activation.ip_address}</div>
-                      <div className="truncate" title={activation.user_agent}>
+                      <div className="truncate" title={activation.user_agent || undefined}>
                         UA: {activation.user_agent ? activation.user_agent.substring(0, 40) + '...' : 'Unknown'}
                       </div>
                       <div>

@@ -91,7 +91,13 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    interface UpdateData {
+      name?: string;
+      contact_email?: string;
+      contact_name?: string;
+    }
+    
+    const updateData: UpdateData = {};
     if (name) updateData.name = name;
     if (contact_email) updateData.contact_email = contact_email;
     if (contact_name) updateData.contact_name = contact_name;
@@ -149,7 +155,7 @@ export async function DELETE(
     });
 
     // Serialize licenses for the check
-    const serializedLicenses = serializeData(licenses);
+    const serializedLicenses = serializeData(licenses) as unknown[];
 
     if (serializedLicenses.length > 0) {
       return NextResponse.json(

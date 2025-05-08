@@ -33,6 +33,7 @@ export default function LoginForm() {
       router.refresh();
     } catch (error) {
       setError('An error occurred. Please try again.');
+      console.error('Login error:', error);
       setIsLoading(false);
     }
   };
