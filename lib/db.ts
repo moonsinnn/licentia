@@ -89,8 +89,79 @@ export async function generateLicenseKey(): Promise<string> {
  * Validate a license key for a domain
  */
 export async function validateLicense(licenseKey: string, domain: string) {
-  interface ValidationResult { is_valid: boolean; message: string }
-  return executeStoredProcedure<ValidationResult>('validate_license', [licenseKey, domain]);
+  // Skip the stored procedure and directly implement validation logic
+  // This avoids collation issues entirely
+  try {
+    // Find the license by key
+    const license = await prisma.license.findUnique({
+      where: { license_key: licenseKey },
+    });
+    
+    if (!license) {
+      return { is_valid: false, message: 'License key not found' };
+    }
+    
+    // Check if license is active
+    if (!license.is_active) {
+      return { is_valid: false, message: 'License is inactive' };
+    }
+    
+    // Check if license has expired
+    if (license.expires_at && new Date(license.expires_at) < new Date()) {
+      return { is_valid: false, message: 'License has expired' };
+    }
+    
+    // Check domain allowlist if it's not empty
+    const allowedDomains = license.allowed_domains as string[];
+    if (allowedDomains && allowedDomains.length > 0) {
+      const isDomainInList = allowedDomains.some(
+        allowedDomain => {
+          // Support wildcard domains
+          if (allowedDomain.startsWith('*.')) {
+            const suffix = allowedDomain.substring(1); // Remove the *
+            return domain.endsWith(suffix);
+          }
+          return domain === allowedDomain;
+        }
+      );
+      
+      if (!isDomainInList) {
+        return { is_valid: false, message: 'Domain not allowed for this license' };
+      }
+    }
+    
+    // Check activations count
+    const activeActivations = await prisma.licenseActivation.count({
+      where: { 
+        license_id: license.id,
+        is_active: true
+      },
+    });
+    
+    if (activeActivations >= license.max_activations) {
+      // Check if this domain is already activated
+      const existingActivation = await prisma.licenseActivation.findFirst({
+        where: {
+          license_id: license.id,
+          domain: domain,
+          is_active: true
+        }
+      });
+      
+      if (!existingActivation) {
+        return { 
+          is_valid: false, 
+          message: `Maximum number of activations (${license.max_activations}) reached` 
+        };
+      }
+    }
+    
+    // All checks passed
+    return { is_valid: true, message: 'License is valid for this domain' };
+  } catch (error) {
+    console.error('Error validating license:', error);
+    throw error;
+  }
 }
 
 /**
