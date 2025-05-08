@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Organizations table
+model Organization {
+  id            BigInt   @id @default(autoincrement())
+  name          String   @db.VarChar(255)
+  contact_email String   @db.VarChar(255)
+  contact_name  String   @db.VarChar(255)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  licenses License[]
+
+  @@map("organizations")
+}
+
+// Products table
+model Product {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String   @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  licenses License[]
+
+  @@map("products")
+}
+
+// Licenses table
+model License {
+  id               BigInt   @id @default(autoincrement())
+  license_key      String   @unique @db.VarChar(255)
+  organization_id  BigInt
+  product_id       BigInt
+  allowed_domains  Json     @default("[]")
+  max_activations  Int
+  is_active        Boolean  @default(true)
+  expires_at       DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  // Relations
+  organization      Organization       @relation(fields: [organization_id], references: [id])
+  product           Product            @relation(fields: [product_id], references: [id])
+  license_activations LicenseActivation[]
+
+  @@map("licenses")
+}
+
+// License Activations table
+model LicenseActivation {
+  id         BigInt   @id @default(autoincrement())
+  license_id BigInt
+  domain     String   @db.VarChar(255)
+  ip_address String   @db.VarChar(45)
+  user_agent String   @db.Text
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  license License @relation(fields: [license_id], references: [id])
+
+  @@map("license_activations")
+}
+
+// Users table
+model User {
+  id            BigInt    @id @default(autoincrement())
+  email         String    @unique @db.VarChar(255)
+  name          String    @db.VarChar(255)
+  password      String    @db.VarChar(255)
+  role          Role      @default(admin)
+  email_verified DateTime?
+  image         String?   @db.VarChar(255)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@map("users")
+}
+
+// Role enum for user roles
+enum Role {
+  admin
+  super_admin
+}

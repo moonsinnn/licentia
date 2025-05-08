@@ -1,0 +1,82 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
+
+// GET /api/organizations
+export async function GET(request: NextRequest) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get all organizations
+    const organizations = await prisma.organization.findMany({
+      orderBy: { created_at: 'desc' },
+    });
+
+    return NextResponse.json({
+      success: true,
+      organizations,
+    });
+  } catch (error) {
+    console.error('Error fetching organizations:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch organizations' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/organizations
+export async function POST(request: NextRequest) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { name, contact_email, contact_name } = body;
+
+    // Validate inputs
+    if (!name || !contact_email || !contact_name) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Name, contact email, and contact name are required' 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Create organization
+    const organization = await prisma.organization.create({
+      data: {
+        name,
+        contact_email,
+        contact_name,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      organization,
+    });
+  } catch (error) {
+    console.error('Error creating organization:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create organization' },
+      { status: 500 }
+    );
+  }
+} 

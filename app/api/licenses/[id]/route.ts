@@ -1,0 +1,173 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/route';
+
+// GET /api/licenses/[id]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const id = BigInt(params.id);
+
+    // Get license with related data
+    const license = await prisma.license.findUnique({
+      where: { id },
+      include: {
+        organization: true,
+        product: true,
+        license_activations: true,
+      },
+    });
+
+    if (!license) {
+      return NextResponse.json(
+        { success: false, error: 'License not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      license,
+    });
+  } catch (error) {
+    console.error('Error fetching license:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch license' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/licenses/[id]
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const id = BigInt(params.id);
+    const body = await request.json();
+    const { 
+      allowed_domains,
+      max_activations,
+      is_active,
+      expires_at
+    } = body;
+
+    // Check if license exists
+    const existingLicense = await prisma.license.findUnique({
+      where: { id },
+    });
+
+    if (!existingLicense) {
+      return NextResponse.json(
+        { success: false, error: 'License not found' },
+        { status: 404 }
+      );
+    }
+
+    // Build update data
+    const updateData: any = {};
+    if (allowed_domains !== undefined) updateData.allowed_domains = allowed_domains;
+    if (max_activations !== undefined) updateData.max_activations = Number(max_activations);
+    if (is_active !== undefined) updateData.is_active = !!is_active;
+    if (expires_at !== undefined) updateData.expires_at = expires_at ? new Date(expires_at) : null;
+
+    // Update license
+    const license = await prisma.license.update({
+      where: { id },
+      data: updateData,
+      include: {
+        organization: true,
+        product: true,
+        license_activations: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      license,
+    });
+  } catch (error) {
+    console.error('Error updating license:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to update license' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/licenses/[id]
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const id = BigInt(params.id);
+
+    // Check if license exists
+    const existingLicense = await prisma.license.findUnique({
+      where: { id },
+      include: { license_activations: true },
+    });
+
+    if (!existingLicense) {
+      return NextResponse.json(
+        { success: false, error: 'License not found' },
+        { status: 404 }
+      );
+    }
+
+    // Delete all license activations first
+    if (existingLicense.license_activations.length > 0) {
+      await prisma.licenseActivation.deleteMany({
+        where: { license_id: id },
+      });
+    }
+
+    // Delete license
+    await prisma.license.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'License deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting license:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete license' },
+      { status: 500 }
+    );
+  }
+} 

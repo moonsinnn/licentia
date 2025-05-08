@@ -7,9 +7,9 @@ interface ProductViewPageProps {
   }
 }
 
-export default function ProductViewPage({ params }: ProductViewPageProps) {
+export default async function ProductViewPage({ params }: ProductViewPageProps) {
   // We would fetch the product details by ID
-  const productId = params.id
+  const productId = (await params).id
   
   // Mock data for display purposes
   const productData = {

@@ -7,9 +7,9 @@ interface LicenseViewPageProps {
   }
 }
 
-export default function LicenseViewPage({ params }: LicenseViewPageProps) {
+export default async function LicenseViewPage({ params }: LicenseViewPageProps) {
   // we would fetch the license details by ID
-  const licenseId = params.id
+  const licenseId = (await params).id
   
   // Mock data for display purposes
   const licenseData = {

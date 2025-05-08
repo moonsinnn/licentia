@@ -15,6 +15,7 @@ import {
   X,
   FileJson
 } from "lucide-react"
+import { signOut } from 'next-auth/react'
 
 const sidebarItems: NavItem[] = [
   {
@@ -87,13 +88,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </button>
           
           <nav className="hidden md:flex items-center gap-4">
-            <Link 
-              href="/logout" 
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            <button
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary focus:outline-none"
             >
               <LogOut className="h-4 w-4" />
               <span>Logout</span>
-            </Link>
+            </button>
           </nav>
         </div>
       </header>
@@ -104,13 +105,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
           <div className="container mx-auto px-4 py-4">
             <SidebarNav items={sidebarItems} className="py-2" />
             <div className="mt-4 pt-4 border-t">
-              <Link 
-                href="/logout" 
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              <button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary focus:outline-none"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

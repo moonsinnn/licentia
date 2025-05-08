@@ -7,9 +7,9 @@ interface OrganizationViewPageProps {
   }
 }
 
-export default function OrganizationViewPage({ params }: OrganizationViewPageProps) {
+export default async function OrganizationViewPage({ params }: OrganizationViewPageProps) {
   // We would fetch the organization details by ID
-  const orgId = params.id
+  const orgId = (await params).id
   
   // Mock data for display purposes
   const orgData = {
