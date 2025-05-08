@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Get organization
     const organization = await prisma.organization.findUnique({
@@ -63,7 +63,7 @@ export async function PUT(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
     const body = await request.json();
     const { name, contact_email, contact_name } = body;
 
@@ -141,7 +141,7 @@ export async function DELETE(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Check if there are any licenses for this organization
     const licenses = await prisma.license.findMany({

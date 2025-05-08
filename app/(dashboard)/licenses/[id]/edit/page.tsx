@@ -65,7 +65,7 @@ async function getProducts() {
 }
 
 export default async function LicenseEditPage({ params }: LicenseEditPageProps) {
-  const licenseId = params.id;
+  const licenseId = (await params).id;
   
   // Fetch data in parallel
   const [license, organizations, products] = await Promise.all([

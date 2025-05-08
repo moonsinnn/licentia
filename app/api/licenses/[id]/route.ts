@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Get license with related data
     const license = await prisma.license.findUnique({
@@ -77,7 +77,7 @@ export async function PUT(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
     const body = await request.json();
     const { 
       allowed_domains,
@@ -156,7 +156,7 @@ export async function DELETE(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Check if license exists
     const existingLicense = await prisma.license.findUnique({

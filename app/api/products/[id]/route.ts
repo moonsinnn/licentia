@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Get product
     const product = await prisma.product.findUnique({
@@ -63,7 +63,7 @@ export async function PUT(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
     const body = await request.json();
     const { name, description } = body;
 
@@ -140,7 +140,7 @@ export async function DELETE(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Check if there are any licenses for this product
     const licenses = await prisma.license.findMany({

@@ -37,7 +37,7 @@ async function getOrganizationData(id: string) {
 }
 
 export default async function OrganizationEditPage({ params }: OrganizationEditPageProps) {
-  const orgId = params.id;
+  const orgId = (await params).id;
   const organization = await getOrganizationData(orgId);
 
   return (

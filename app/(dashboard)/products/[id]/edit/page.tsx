@@ -35,7 +35,7 @@ async function getProductData(id: string) {
 }
 
 export default async function ProductEditPage({ params }: ProductEditPageProps) {
-  const productId = params.id;
+  const productId = (await params).id;
   const product = await getProductData(productId);
 
   return (

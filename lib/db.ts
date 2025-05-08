@@ -42,24 +42,9 @@ export function serializeData(data: any): any {
 }
 
 /**
- * Helper function to execute a stored procedure that returns a result
- */
-export async function executeStoredProcedure<T>(
-  procedureName: string,
-  params: any[]
-): Promise<T> {
-  const paramPlaceholders = params.map(() => '?').join(', ');
-  const query = `CALL ${procedureName}(${paramPlaceholders})`;
-  
-  const result = await prisma.$queryRawUnsafe(query, ...params) as T[];
-  return result[0] as T;
-}
-
-/**
  * Generate a unique license key
  */
 export async function generateLicenseKey(): Promise<string> {
-  // Generate a random license key (avoiding the stored procedure due to collation issues)
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   
   // Generate four groups of four characters
@@ -173,27 +158,188 @@ export async function activateLicense(
   ipAddress: string,
   userAgent: string
 ) {
-  interface ActivationResult { success: boolean; message: string }
-  return executeStoredProcedure<ActivationResult>('activate_license', [
-    licenseKey,
-    domain,
-    ipAddress,
-    userAgent,
-  ]);
+  try {
+    // Find the license by key
+    const license = await prisma.license.findUnique({
+      where: { license_key: licenseKey },
+    });
+    
+    if (!license) {
+      return { success: false, message: 'License key not found' };
+    }
+    
+    // Check if license is active
+    if (!license.is_active) {
+      return { success: false, message: 'License is inactive' };
+    }
+    
+    // Check if license has expired
+    if (license.expires_at && new Date(license.expires_at) < new Date()) {
+      return { success: false, message: 'License has expired' };
+    }
+    
+    // Check domain allowlist if it's not empty
+    const allowedDomains = license.allowed_domains as string[];
+    if (allowedDomains && allowedDomains.length > 0) {
+      const isDomainInList = allowedDomains.some(
+        allowedDomain => {
+          // Support wildcard domains
+          if (allowedDomain.startsWith('*.')) {
+            const suffix = allowedDomain.substring(1); // Remove the *
+            return domain.endsWith(suffix);
+          }
+          return domain === allowedDomain;
+        }
+      );
+      
+      if (!isDomainInList) {
+        return { success: false, message: 'Domain not allowed for this license' };
+      }
+    }
+    
+    // Check if this domain is already activated
+    const existingActivation = await prisma.licenseActivation.findFirst({
+      where: {
+        license_id: license.id,
+        domain: domain,
+      },
+    });
+    
+    if (existingActivation) {
+      // If already active, return success
+      if (existingActivation.is_active) {
+        return { success: true, message: 'License already activated for this domain' };
+      }
+      
+      // Otherwise reactivate it
+      const updatedActivation = await prisma.licenseActivation.update({
+        where: { id: existingActivation.id },
+        data: { 
+          is_active: true,
+          ip_address: ipAddress,
+          user_agent: userAgent,
+        },
+      });
+      
+      return { success: true, message: 'License reactivated for this domain' };
+    }
+    
+    // Check activations count
+    const activeActivations = await prisma.licenseActivation.count({
+      where: { 
+        license_id: license.id,
+        is_active: true
+      },
+    });
+    
+    if (activeActivations >= license.max_activations) {
+      return { 
+        success: false, 
+        message: `Maximum number of activations (${license.max_activations}) reached` 
+      };
+    }
+    
+    // Create new activation
+    const newActivation = await prisma.licenseActivation.create({
+      data: {
+        license_id: license.id,
+        domain,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        is_active: true,
+      },
+    });
+    
+    return { success: true, message: 'License activated successfully' };
+  } catch (error) {
+    console.error('Error activating license:', error);
+    throw error;
+  }
 }
 
 /**
  * Deactivate a license for a domain
  */
 export async function deactivateLicense(licenseKey: string, domain: string) {
-  interface DeactivationResult { success: boolean; message: string }
-  return executeStoredProcedure<DeactivationResult>('deactivate_license', [licenseKey, domain]);
+  try {
+    // Find the license by key
+    const license = await prisma.license.findUnique({
+      where: { license_key: licenseKey },
+    });
+    
+    if (!license) {
+      return { success: false, message: 'License key not found' };
+    }
+    
+    // Find the activation for this domain
+    const activation = await prisma.licenseActivation.findFirst({
+      where: {
+        license_id: license.id,
+        domain: domain,
+      },
+    });
+    
+    if (!activation) {
+      return { success: false, message: 'No activation found for this domain' };
+    }
+    
+    // If already inactive, just return success
+    if (!activation.is_active) {
+      return { success: true, message: 'License already deactivated for this domain' };
+    }
+    
+    // Deactivate the license
+    const updatedActivation = await prisma.licenseActivation.update({
+      where: { id: activation.id },
+      data: { is_active: false },
+    });
+    
+    return { success: true, message: 'License deactivated successfully' };
+  } catch (error) {
+    console.error('Error deactivating license:', error);
+    throw error;
+  }
 }
 
 /**
  * Check if a domain is allowed for a license
  */
 export async function isDomainAllowed(licenseId: bigint, domain: string) {
-  interface DomainCheckResult { is_allowed: boolean; message: string }
-  return executeStoredProcedure<DomainCheckResult>('is_domain_allowed', [licenseId, domain]);
+  try {
+    // Find the license
+    const license = await prisma.license.findUnique({
+      where: { id: licenseId },
+    });
+    
+    if (!license) {
+      return { is_allowed: false, message: 'License not found' };
+    }
+    
+    // If allowedDomains is empty, all domains are allowed
+    const allowedDomains = license.allowed_domains as string[];
+    if (!allowedDomains || allowedDomains.length === 0) {
+      return { is_allowed: true, message: 'All domains are allowed for this license' };
+    }
+    
+    // Check if the domain is in the allowed list
+    const isDomainInList = allowedDomains.some(
+      allowedDomain => {
+        // Support wildcard domains
+        if (allowedDomain.startsWith('*.')) {
+          const suffix = allowedDomain.substring(1); // Remove the *
+          return domain.endsWith(suffix);
+        }
+        return domain === allowedDomain;
+      }
+    );
+    
+    if (isDomainInList) {
+      return { is_allowed: true, message: 'Domain is allowed for this license' };
+    } else {
+      return { is_allowed: false, message: 'Domain is not allowed for this license' };
+    }
+  } catch (error) {
+    console.error('Error checking if domain is allowed:', error);
+    throw error;
+  }
 } 

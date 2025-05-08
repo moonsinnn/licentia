@@ -58,7 +58,7 @@ async function getOrganizationLicenses(id: string) {
 }
 
 export default async function OrganizationViewPage({ params }: OrganizationViewPageProps) {
-  const orgId = params.id;
+  const orgId = (await params).id;
   
   // Fetch data in parallel
   const [organization, licenses] = await Promise.all([

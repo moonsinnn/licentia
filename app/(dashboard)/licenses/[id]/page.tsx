@@ -20,7 +20,7 @@ async function getLicenseData(id: string) {
 }
 
 export default async function LicenseViewPage({ params }: LicenseViewPageProps) {
-  const licenseId = params.id;
+  const licenseId = (await params).id;
   const licenseData = await getLicenseData(licenseId);
   
   if (!licenseData) {

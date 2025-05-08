@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Verify organization exists
     const organization = await prisma.organization.findUnique({

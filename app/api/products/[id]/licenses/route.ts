@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const id = BigInt(params.id);
+    const id = BigInt((await params).id);
 
     // Check if product exists
     const product = await prisma.product.findUnique({
