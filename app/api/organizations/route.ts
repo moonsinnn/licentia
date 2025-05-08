@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
 
@@ -20,9 +20,12 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' },
     });
 
+    // Serialize the data to handle BigInt values
+    const serializedOrganizations = serializeData(organizations);
+
     return NextResponse.json({
       success: true,
-      organizations,
+      organizations: serializedOrganizations,
     });
   } catch (error) {
     console.error('Error fetching organizations:', error);
@@ -68,9 +71,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Serialize the data to handle BigInt values
+    const serializedOrganization = serializeData(organization);
+
     return NextResponse.json({
       success: true,
-      organization,
+      organization: serializedOrganization,
     });
   } catch (error) {
     console.error('Error creating organization:', error);

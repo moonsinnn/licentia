@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, deactivateLicense } from '@/lib/db';
+import { prisma, deactivateLicense, serializeData } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/route';
 
 // Fallback deactivation function if the stored procedure fails
 async function deactivateLicenseFallback(licenseKey: string, domain: string) {
@@ -31,7 +33,7 @@ async function deactivateLicenseFallback(licenseKey: string, domain: string) {
     }
     
     // Deactivate the license
-    await prisma.licenseActivation.update({
+    const updatedActivation = await prisma.licenseActivation.update({
       where: { id: activation.id },
       data: { is_active: false },
     });
@@ -45,11 +47,20 @@ async function deactivateLicenseFallback(licenseKey: string, domain: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
     const body = await request.json();
-    const { licenseKey, domain } = body;
+    const { license_key, domain } = body;
     
     // Validate inputs
-    if (!licenseKey || !domain) {
+    if (!license_key || !domain) {
       return NextResponse.json(
         { 
           success: false, 
@@ -62,26 +73,17 @@ export async function POST(request: NextRequest) {
     let result;
     try {
       // Try to use the stored procedure first
-      result = await deactivateLicense(licenseKey, domain);
+      result = await deactivateLicense(license_key, domain);
     } catch (error) {
       console.warn('Error using stored procedure for license deactivation, falling back to direct implementation:', error);
       
       // Fall back to direct implementation
-      result = await deactivateLicenseFallback(licenseKey, domain);
-    }
-    
-    if (!result.success) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: result.message 
-        },
-        { status: 400 }
-      );
+      result = await deactivateLicenseFallback(license_key, domain);
     }
     
     return NextResponse.json({
       success: true,
+      deactivated: result.success,
       message: result.message
     });
   } catch (error) {

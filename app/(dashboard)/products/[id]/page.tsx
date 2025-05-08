@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ChevronLeft, Package, AlignJustify, Calendar, Key } from "lucide-react"
+import { getFromApi } from "@/lib/api-utils"
 
 interface ProductViewPageProps {
   params: {
@@ -7,44 +8,61 @@ interface ProductViewPageProps {
   }
 }
 
-export default async function ProductViewPage({ params }: ProductViewPageProps) {
-  // We would fetch the product details by ID
-  const productId = (await params).id
-  
-  // Mock data for display purposes
-  const productData = {
-    id: productId,
-    name: "Analytics Dashboard Pro",
-    description: "Professional analytics dashboard with advanced features for data visualization, reporting, and insights. Includes customizable widgets, real-time data processing, and export capabilities.",
-    created_at: "2023-08-15T00:00:00Z",
-    updated_at: "2023-08-15T00:00:00Z",
-  }
+interface Product {
+  id: string | number;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
 
-  // Mock licenses for this product
-  const licenses = [
-    {
-      id: "1",
-      license_key: "ABCD-1234-EFGH-5678",
-      organization: {
-        id: "1",
-        name: "Acme Corporation",
-      },
-      is_active: true,
-      expires_at: null,
-      created_at: "2023-09-15T00:00:00Z",
-    },
-    {
-      id: "3",
-      license_key: "POIU-4567-LKJH-8901",
-      organization: {
-        id: "3",
-        name: "GlobalFusion Inc",
-      },
-      is_active: false,
-      expires_at: "2023-12-31T00:00:00Z",
-      created_at: "2023-06-10T00:00:00Z",
-    }
-  ]
+interface License {
+  id: string | number;
+  license_key: string;
+  organization: {
+    id: string | number;
+    name: string;
+  };
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
+
+async function getProductData(id: string) {
+  try {
+    const response = await getFromApi<{ product: Product }>(`/api/products/${id}`);
+    return response.product;
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    // Return fallback data if API request fails
+    return {
+      id,
+      name: "Product not found",
+      description: "This product could not be loaded",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }
+}
+
+async function getProductLicenses(id: string) {
+  try {
+    const response = await getFromApi<{ licenses: License[] }>(`/api/products/${id}/licenses`);
+    return response.licenses;
+  } catch (error) {
+    console.error('Error fetching product licenses:', error);
+    return [];
+  }
+}
+
+export default async function ProductViewPage({ params }: ProductViewPageProps) {
+  const productId = params.id;
+  
+  // Fetch data in parallel
+  const [product, licenses] = await Promise.all([
+    getProductData(productId),
+    getProductLicenses(productId)
+  ]);
 
   return (
     <div className="space-y-6">
@@ -57,7 +75,7 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
           Back to Products
         </Link>
         <div className="mt-2 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">{productData.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
           <div className="flex items-center gap-2">
             <Link
               href={`/products/${productId}/edit`}
@@ -87,21 +105,21 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
                 <AlignJustify className="h-4 w-4" />
                 Description
               </dt>
-              <dd className="text-sm">{productData.description}</dd>
+              <dd className="text-sm">{product.description}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 Created
               </dt>
-              <dd className="text-sm">{new Date(productData.created_at).toLocaleString()}</dd>
+              <dd className="text-sm">{new Date(product.created_at).toLocaleString()}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 Last Updated
               </dt>
-              <dd className="text-sm">{new Date(productData.updated_at).toLocaleString()}</dd>
+              <dd className="text-sm">{new Date(product.updated_at).toLocaleString()}</dd>
             </div>
           </dl>
         </div>
@@ -120,10 +138,10 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
             </Link>
           </div>
           
-          {licenses.length > 0 ? (
+          {licenses && licenses.length > 0 ? (
             <div className="space-y-4">
               {licenses.map(license => (
-                <div key={license.id} className="border rounded-md p-4">
+                <div key={String(license.id)} className="border rounded-md p-4">
                   <div className="flex justify-between items-start mb-2">
                     <Link
                       href={`/licenses/${license.id}`}

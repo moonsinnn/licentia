@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
@@ -32,9 +32,12 @@ export async function GET(
       );
     }
 
+    // Serialize the data to handle BigInt values
+    const serializedProduct = serializeData(product);
+
     return NextResponse.json({
       success: true,
-      product,
+      product: serializedProduct,
     });
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -98,9 +101,12 @@ export async function PUT(
       data: updateData,
     });
 
+    // Serialize the data to handle BigInt values
+    const serializedProduct = serializeData(product);
+
     return NextResponse.json({
       success: true,
-      product,
+      product: serializedProduct,
     });
   } catch (error) {
     console.error('Error updating product:', error);
@@ -141,7 +147,10 @@ export async function DELETE(
       where: { product_id: id },
     });
 
-    if (licenses.length > 0) {
+    // Serialize licenses for the check
+    const serializedLicenses = serializeData(licenses);
+
+    if (serializedLicenses.length > 0) {
       return NextResponse.json(
         { 
           success: false, 

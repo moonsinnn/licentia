@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ChevronLeft, Building2, Mail, User, Calendar, Key } from "lucide-react"
+import { getFromApi } from "@/lib/api-utils"
 
 interface OrganizationViewPageProps {
   params: {
@@ -7,45 +8,63 @@ interface OrganizationViewPageProps {
   }
 }
 
-export default async function OrganizationViewPage({ params }: OrganizationViewPageProps) {
-  // We would fetch the organization details by ID
-  const orgId = (await params).id
-  
-  // Mock data for display purposes
-  const orgData = {
-    id: orgId,
-    name: "Acme Corporation",
-    contact_name: "John Doe",
-    contact_email: "john@acmecorp.com",
-    created_at: "2023-09-01T00:00:00Z",
-    updated_at: "2023-09-01T00:00:00Z",
-  }
+interface Organization {
+  id: string | number;
+  name: string;
+  contact_name: string;
+  contact_email: string;
+  created_at: string;
+  updated_at: string;
+}
 
-  // Mock licenses for this organization
-  const licenses = [
-    {
-      id: "1",
-      license_key: "ABCD-1234-EFGH-5678",
-      product: {
-        id: "1",
-        name: "Analytics Dashboard Pro",
-      },
-      is_active: true,
-      expires_at: null,
-      created_at: "2023-09-15T00:00:00Z",
-    },
-    {
-      id: "2",
-      license_key: "WXYZ-9876-MNOP-5432",
-      product: {
-        id: "2",
-        name: "CRM Suite",
-      },
-      is_active: true,
-      expires_at: "2025-06-30T00:00:00Z",
-      created_at: "2023-10-20T00:00:00Z",
-    }
-  ]
+interface License {
+  id: string | number;
+  license_key: string;
+  product: {
+    id: string | number;
+    name: string;
+  };
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
+
+async function getOrganizationData(id: string) {
+  try {
+    const response = await getFromApi<{ organization: Organization }>(`/api/organizations/${id}`);
+    return response.organization;
+  } catch (error) {
+    console.error('Error fetching organization:', error);
+    // Return fallback data if API request fails
+    return {
+      id,
+      name: "Organization not found",
+      contact_name: "Unknown",
+      contact_email: "unknown@example.com",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }
+}
+
+async function getOrganizationLicenses(id: string) {
+  try {
+    const response = await getFromApi<{ licenses: License[] }>(`/api/organizations/${id}/licenses`);
+    return response.licenses;
+  } catch (error) {
+    console.error('Error fetching organization licenses:', error);
+    return [];
+  }
+}
+
+export default async function OrganizationViewPage({ params }: OrganizationViewPageProps) {
+  const orgId = params.id;
+  
+  // Fetch data in parallel
+  const [organization, licenses] = await Promise.all([
+    getOrganizationData(orgId),
+    getOrganizationLicenses(orgId)
+  ]);
 
   return (
     <div className="space-y-6">
@@ -58,7 +77,7 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
           Back to Organizations
         </Link>
         <div className="mt-2 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">{orgData.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{organization.name}</h1>
           <div className="flex items-center gap-2">
             <Link
               href={`/organizations/${orgId}/edit`}
@@ -88,7 +107,7 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
                 <User className="h-4 w-4" />
                 Contact Name
               </dt>
-              <dd>{orgData.contact_name}</dd>
+              <dd>{organization.contact_name}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
@@ -96,8 +115,8 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
                 Contact Email
               </dt>
               <dd>
-                <a href={`mailto:${orgData.contact_email}`} className="text-primary hover:underline">
-                  {orgData.contact_email}
+                <a href={`mailto:${organization.contact_email}`} className="text-primary hover:underline">
+                  {organization.contact_email}
                 </a>
               </dd>
             </div>
@@ -106,7 +125,7 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
                 <Calendar className="h-4 w-4" />
                 Created
               </dt>
-              <dd>{new Date(orgData.created_at).toLocaleString()}</dd>
+              <dd>{new Date(organization.created_at).toLocaleString()}</dd>
             </div>
           </dl>
         </div>
@@ -125,10 +144,10 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
             </Link>
           </div>
           
-          {licenses.length > 0 ? (
+          {licenses && licenses.length > 0 ? (
             <div className="space-y-4">
               {licenses.map(license => (
-                <div key={license.id} className="border rounded-md p-4">
+                <div key={String(license.id)} className="border rounded-md p-4">
                   <div className="flex justify-between items-start mb-2">
                     <Link
                       href={`/licenses/${license.id}`}

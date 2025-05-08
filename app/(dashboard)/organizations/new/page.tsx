@@ -8,10 +8,12 @@ import { ChevronLeft } from "lucide-react"
 export default function NewOrganizationPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSubmitting(true)
+    setError(null)
 
     const formData = new FormData(event.currentTarget)
     const data = {
@@ -21,19 +23,34 @@ export default function NewOrganizationPage() {
     }
 
     try {
-      // We would call the API to create the organization
-      console.log("Creating organization:", data)
+      // Call the API to create the organization
+      const response = await fetch('/api/organizations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const result = await response.json();
       
-      // Redirect to organizations page
-      router.push("/organizations")
-      router.refresh()
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create organization');
+      }
+      
+      // Redirect to the newly created organization
+      if (result.success && result.organization) {
+        router.push(`/organizations/${result.organization.id}`);
+        router.refresh();
+      } else {
+        router.push("/organizations");
+        router.refresh();
+      }
     } catch (error) {
-      console.error("Error creating organization:", error)
+      console.error("Error creating organization:", error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -54,6 +71,12 @@ export default function NewOrganizationPage() {
       </div>
 
       <div className="rounded-md border p-6">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>

@@ -1,7 +1,26 @@
 import Link from "next/link"
 import { Package, Plus } from "lucide-react"
+import { getFromApi } from "@/lib/api-utils"
 
-export default function ProductsPage() {
+interface Product {
+  id: string | number;
+  name: string;
+  description: string | null;
+}
+
+async function getProducts(): Promise<Product[]> {
+  try {
+    const data = await getFromApi<{ products: Product[] }>('/api/products');
+    return data.products || [];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+}
+
+export default async function ProductsPage() {
+  const products = await getProducts();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -33,54 +52,30 @@ export default function ProductsPage() {
           </div>
         </div>
         <div className="divide-y">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <h3 className="font-medium">Analytics Dashboard Pro</h3>
-              <p className="text-sm text-muted-foreground">
-                Professional analytics dashboard with advanced features
-              </p>
+          {products.length > 0 ? (
+            products.map((product) => (
+              <div key={String(product.id)} className="flex items-center justify-between p-4">
+                <div>
+                  <h3 className="font-medium">{product.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {product.description || 'No description'}
+                  </p>
+                </div>
+                <div>
+                  <Link
+                    href={`/products/${product.id}`}
+                    className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    View
+                  </Link>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 text-center text-muted-foreground">
+              No products found. Create your first product to get started.
             </div>
-            <div>
-              <Link
-                href="/products/1"
-                className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                View
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <h3 className="font-medium">CRM Suite</h3>
-              <p className="text-sm text-muted-foreground">
-                Complete customer relationship management solution
-              </p>
-            </div>
-            <div>
-              <Link
-                href="/products/2"
-                className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                View
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <h3 className="font-medium">E-commerce Platform</h3>
-              <p className="text-sm text-muted-foreground">
-                Full-featured e-commerce solution for online stores
-              </p>
-            </div>
-            <div>
-              <Link
-                href="/products/3"
-                className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                View
-              </Link>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 
-// GET /api/organizations/[id]/licenses
+// GET /api/products/[id]/licenses
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -20,26 +20,23 @@ export async function GET(
 
     const id = BigInt(params.id);
 
-    // Verify organization exists
-    const organization = await prisma.organization.findUnique({
+    // Check if product exists
+    const product = await prisma.product.findUnique({
       where: { id },
     });
 
-    if (!organization) {
+    if (!product) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
+        { success: false, error: 'Product not found' },
         { status: 404 }
       );
     }
 
-    // Get all licenses for the organization
+    // Get all licenses for this product
     const licenses = await prisma.license.findMany({
-      where: { organization_id: id },
+      where: { product_id: id },
       include: {
-        product: true,
-        license_activations: {
-          where: { is_active: true }  // Only include active activations for counting
-        },
+        organization: true,
       },
       orderBy: { created_at: 'desc' },
     });
@@ -52,9 +49,9 @@ export async function GET(
       licenses: serializedLicenses,
     });
   } catch (error) {
-    console.error('Error fetching organization licenses:', error);
+    console.error('Error fetching product licenses:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch organization licenses' },
+      { success: false, error: 'Failed to fetch product licenses' },
       { status: 500 }
     );
   }

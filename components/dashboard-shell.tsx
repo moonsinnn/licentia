@@ -42,7 +42,6 @@ const sidebarItems: NavItem[] = [
     title: "Analytics",
     href: "/analytics",
     icon: BarChart4,
-    disabled: true,
   },
   {
     title: "API Docs",
@@ -53,7 +52,6 @@ const sidebarItems: NavItem[] = [
     title: "Settings",
     href: "/settings",
     icon: Settings,
-    disabled: true,
   },
 ]
 

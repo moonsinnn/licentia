@@ -3,11 +3,8 @@ import { compare } from 'bcrypt';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-// Make sure to set NEXTAUTH_SECRET in your .env file in production
-// This is just a fallback for development
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || 'THIS_IS_AN_EXAMPLE_SECRET_THAT_IS_AT_LEAST_32_CHARS';
-
-export const authOptions: NextAuthOptions = {
+// Make sure you have NEXTAUTH_SECRET and NEXTAUTH_URL set in your environment
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -68,9 +65,9 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/login', // Error code passed in query string
   },
-  secret: NEXTAUTH_SECRET,
+  // The secret is now managed via environment variables
   debug: process.env.NODE_ENV === 'development',
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST, authOptions }; 

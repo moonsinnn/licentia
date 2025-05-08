@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, validateLicense, isDomainAllowed } from '@/lib/db';
+import { prisma, validateLicense, serializeData } from '@/lib/db';
 
 // Fallback validation function if the stored procedure fails
 async function validateLicenseFallback(licenseKey: string, domain: string) {
@@ -76,13 +76,14 @@ async function validateLicenseFallback(licenseKey: string, domain: string) {
   }
 }
 
+// This endpoint is public - no authentication required
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { licenseKey, domain } = body;
+    const { license_key, domain } = body;
     
     // Validate inputs
-    if (!licenseKey || !domain) {
+    if (!license_key || !domain) {
       return NextResponse.json(
         { 
           success: false, 
@@ -95,24 +96,25 @@ export async function POST(request: NextRequest) {
     let result;
     try {
       // Try to use the stored procedure first
-      result = await validateLicense(licenseKey, domain);
+      result = await validateLicense(license_key, domain);
     } catch (error) {
       console.warn('Error using stored procedure for license validation, falling back to direct implementation:', error);
       
       // Fall back to direct implementation
-      result = await validateLicenseFallback(licenseKey, domain);
+      result = await validateLicenseFallback(license_key, domain);
     }
     
     return NextResponse.json({
       success: true,
-      ...result
+      valid: result.is_valid,
+      message: result.message
     });
   } catch (error) {
     console.error('Error validating license:', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to validate license key' 
+        error: 'Failed to validate license' 
       },
       { status: 500 }
     );

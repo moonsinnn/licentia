@@ -8,10 +8,12 @@ import { ChevronLeft } from "lucide-react"
 export default function NewProductPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSubmitting(true)
+    setError(null)
 
     const formData = new FormData(event.currentTarget)
     const data = {
@@ -20,19 +22,34 @@ export default function NewProductPage() {
     }
 
     try {
-      // We would call the API to create the product
-      console.log("Creating product:", data)
+      // Call the API to create the product
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const result = await response.json();
       
-      // Redirect to products page
-      router.push("/products")
-      router.refresh()
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create product');
+      }
+      
+      // Redirect to the newly created product
+      if (result.success && result.product) {
+        router.push(`/products/${result.product.id}`);
+        router.refresh();
+      } else {
+        router.push("/products");
+        router.refresh();
+      }
     } catch (error) {
-      console.error("Error creating product:", error)
+      console.error("Error creating product:", error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -53,6 +70,12 @@ export default function NewProductPage() {
       </div>
 
       <div className="rounded-md border p-6">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>

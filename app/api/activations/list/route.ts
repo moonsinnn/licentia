@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
@@ -54,11 +54,21 @@ export async function GET(request: NextRequest) {
     const activations = await prisma.licenseActivation.findMany({
       where: whereClause,
       orderBy: { created_at: 'desc' },
+      include: {
+        license: {
+          select: {
+            license_key: true
+          }
+        }
+      }
     });
+    
+    // Serialize the data to handle BigInt values
+    const serializedActivations = serializeData(activations);
     
     return NextResponse.json({
       success: true,
-      activations,
+      activations: serializedActivations,
     });
   } catch (error) {
     console.error('Error listing license activations:', error);

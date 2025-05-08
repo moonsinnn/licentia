@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
 
@@ -20,9 +20,12 @@ export async function GET(request: NextRequest) {
       orderBy: { created_at: 'desc' },
     });
 
+    // Serialize the data to handle BigInt values
+    const serializedProducts = serializeData(products);
+
     return NextResponse.json({
       success: true,
-      products,
+      products: serializedProducts,
     });
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -67,9 +70,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Serialize the data to handle BigInt values
+    const serializedProduct = serializeData(product);
+
     return NextResponse.json({
       success: true,
-      product,
+      product: serializedProduct,
     });
   } catch (error) {
     console.error('Error creating product:', error);

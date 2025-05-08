@@ -1,15 +1,46 @@
 import { BarChart, DollarSign, Clock, Activity } from "lucide-react"
+import { getFromApi } from "@/lib/api-utils"
 
-export default function AnalyticsPage() {
-  // Mock data
-  const stats = {
-    totalLicenses: 24,
-    activeLicenses: 18,
-    totalActivations: 35,
-    activeActivations: 28,
-    totalRevenue: 4820,
-    averageLicenseAge: 67, // days
+interface AnalyticsData {
+  overview: {
+    totalLicenses: number;
+    activeLicenses: number;
+    totalActivations: number;
+    activeActivations: number;
+    averageLicenseAge: number;
+  };
+  trends: {
+    licensesByMonth: Array<{ month: string; count: number }>;
+    activationsByDate: Array<{ date: string; count: number }>;
+  };
+}
+
+async function getAnalyticsData() {
+  try {
+    const data = await getFromApi<{ analytics: AnalyticsData }>('/api/analytics');
+    return data.analytics;
+  } catch (error) {
+    console.error('Error fetching analytics data:', error);
+    // Return default values if API call fails
+    return {
+      overview: {
+        totalLicenses: 0,
+        activeLicenses: 0,
+        totalActivations: 0,
+        activeActivations: 0,
+        averageLicenseAge: 0
+      },
+      trends: {
+        licensesByMonth: [],
+        activationsByDate: []
+      }
+    };
   }
+}
+
+export default async function AnalyticsPage() {
+  const analytics = await getAnalyticsData();
+  const { totalLicenses, activeLicenses, totalActivations, activeActivations, averageLicenseAge } = analytics.overview;
 
   return (
     <div className="space-y-6">
@@ -23,19 +54,19 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total Licenses"
-          value={stats.totalLicenses}
-          description={`${stats.activeLicenses} active`}
+          value={totalLicenses}
+          description={`${activeLicenses} active`}
           icon={<BarChart className="h-5 w-5 text-primary" />}
         />
         <StatCard
           title="License Activations"
-          value={stats.totalActivations}
-          description={`${stats.activeActivations} active`}
+          value={totalActivations}
+          description={`${activeActivations} active`}
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
         <StatCard
           title="Average License Age"
-          value={`${stats.averageLicenseAge}`}
+          value={`${averageLicenseAge}`}
           description="days"
           icon={<Clock className="h-5 w-5 text-primary" />}
         />
@@ -79,13 +110,67 @@ export default function AnalyticsPage() {
         <div className="rounded-lg border p-6">
           <h3 className="text-lg font-medium mb-4">License Growth</h3>
           <div className="flex items-center justify-center h-48 bg-slate-50 dark:bg-slate-800 rounded-md">
-            <p className="text-muted-foreground">Charts coming soon</p>
+            {analytics.trends.licensesByMonth.length > 0 ? (
+              <div className="w-full h-full p-4">
+                <div className="flex justify-between mb-2">
+                  {analytics.trends.licensesByMonth.map((item, index) => (
+                    <div key={index} className="text-xs text-muted-foreground">
+                      {item.month.split('-')[1]}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-end h-32 space-x-2">
+                  {analytics.trends.licensesByMonth.map((item, index) => {
+                    const maxCount = Math.max(...analytics.trends.licensesByMonth.map(i => i.count));
+                    const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center">
+                        <div 
+                          className="w-full bg-primary rounded-t" 
+                          style={{ height: `${height}%` }}
+                        ></div>
+                        <div className="text-xs mt-1">{item.count}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No data available</p>
+            )}
           </div>
         </div>
         <div className="rounded-lg border p-6">
-          <h3 className="text-lg font-medium mb-4">Activation Map</h3>
+          <h3 className="text-lg font-medium mb-4">Recent Activations</h3>
           <div className="flex items-center justify-center h-48 bg-slate-50 dark:bg-slate-800 rounded-md">
-            <p className="text-muted-foreground">Geographic visualization coming soon</p>
+            {analytics.trends.activationsByDate.length > 0 ? (
+              <div className="w-full h-full p-4">
+                <div className="flex justify-between mb-2">
+                  {analytics.trends.activationsByDate.slice(-7).map((item, index) => (
+                    <div key={index} className="text-xs text-muted-foreground">
+                      {item.date.split('-')[2]}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-end h-32 space-x-2">
+                  {analytics.trends.activationsByDate.slice(-7).map((item, index) => {
+                    const maxCount = Math.max(...analytics.trends.activationsByDate.slice(-7).map(i => i.count));
+                    const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center">
+                        <div 
+                          className="w-full bg-primary rounded-t" 
+                          style={{ height: `${height}%` }}
+                        ></div>
+                        <div className="text-xs mt-1">{item.count}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No data available</p>
+            )}
           </div>
         </div>
       </div>

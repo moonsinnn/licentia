@@ -13,6 +13,35 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 export default prisma;
 
 /**
+ * Helper function to serialize data with BigInt values to JSON
+ * Also properly formats JSON fields
+ */
+export function serializeData(data: any): any {
+  // First, handle BigInt serialization
+  const jsonString = JSON.stringify(data, (key, value) => {
+    // Handle BigInt values
+    if (typeof value === 'bigint') {
+      return value.toString();
+    }
+    
+    // Handle JSON string fields that need to be parsed (like allowed_domains)
+    if (key === 'allowed_domains' && typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        // If parsing fails, return as is
+        console.warn(`Failed to parse allowed_domains: ${value}`, e);
+        return value;
+      }
+    }
+    
+    return value;
+  });
+  
+  return JSON.parse(jsonString);
+}
+
+/**
  * Helper function to execute a stored procedure that returns a result
  */
 export async function executeStoredProcedure<T>(
@@ -30,9 +59,30 @@ export async function executeStoredProcedure<T>(
  * Generate a unique license key
  */
 export async function generateLicenseKey(): Promise<string> {
-  interface LicenseKeyResult { license_key: string }
-  const result = await executeStoredProcedure<LicenseKeyResult>('generate_license_key', []);
-  return result.license_key;
+  // Generate a random license key (avoiding the stored procedure due to collation issues)
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  
+  // Generate four groups of four characters
+  let licenseKey = '';
+  for (let group = 0; group < 4; group++) {
+    for (let i = 0; i < 4; i++) {
+      const randomIndex = Math.floor(Math.random() * chars.length);
+      licenseKey += chars[randomIndex];
+    }
+    if (group < 3) licenseKey += '-'; // Add hyphen between groups
+  }
+  
+  // Ensure the key is unique by checking the database
+  const existingLicense = await prisma.license.findUnique({
+    where: { license_key: licenseKey },
+  });
+  
+  if (existingLicense) {
+    // Try again if the key already exists
+    return generateLicenseKey();
+  }
+  
+  return licenseKey;
 }
 
 /**

@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { ChevronLeft, Key, Building2, Package, Clock, Users, Globe } from "lucide-react"
+import { getFromApi } from "@/lib/api-utils"
+import ActivationForm from "@/components/ActivationForm"
 
 interface LicenseViewPageProps {
   params: {
@@ -7,49 +9,44 @@ interface LicenseViewPageProps {
   }
 }
 
-export default async function LicenseViewPage({ params }: LicenseViewPageProps) {
-  // we would fetch the license details by ID
-  const licenseId = (await params).id
-  
-  // Mock data for display purposes
-  const licenseData = {
-    id: licenseId,
-    license_key: "ABCD-1234-EFGH-5678",
-    organization: {
-      id: "1",
-      name: "Acme Corporation",
-    },
-    product: {
-      id: "1",
-      name: "Analytics Dashboard Pro",
-    },
-    allowed_domains: ["acme.com", "acmecorp.com"],
-    max_activations: 5,
-    current_activations: 2,
-    is_active: true,
-    expires_at: null,
-    created_at: "2023-09-15T00:00:00Z",
+async function getLicenseData(id: string) {
+  try {
+    const response = await getFromApi<{ license: any }>(`/api/licenses/${id}`);
+    return response.license;
+  } catch (error) {
+    console.error('Error fetching license:', error);
+    return null;
   }
+}
 
-  // Recent activations
-  const activations = [
-    {
-      id: "1",
-      domain: "app.acme.com",
-      ip_address: "192.168.1.1",
-      user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      is_active: true,
-      created_at: "2024-01-15T10:30:00Z",
-    },
-    {
-      id: "2",
-      domain: "dashboard.acmecorp.com",
-      ip_address: "192.168.1.2",
-      user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      is_active: true,
-      created_at: "2024-02-20T14:45:00Z",
-    }
-  ]
+export default async function LicenseViewPage({ params }: LicenseViewPageProps) {
+  const licenseId = params.id;
+  const licenseData = await getLicenseData(licenseId);
+  
+  if (!licenseData) {
+    return (
+      <div className="p-6 text-center">
+        <h1 className="text-xl font-bold">License not found</h1>
+        <p className="mt-2 text-muted-foreground">The license you're looking for doesn't exist or you don't have permission to view it.</p>
+        <Link 
+          href="/licenses" 
+          className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Licenses
+        </Link>
+      </div>
+    );
+  }
+  
+  // Format data for display
+  const activations = licenseData.license_activations || [];
+  const currentActivations = activations.filter((act: any) => act.is_active).length;
+  
+  // Ensure allowed_domains is an array
+  const allowedDomains = Array.isArray(licenseData.allowed_domains) 
+    ? licenseData.allowed_domains 
+    : (licenseData.allowed_domains ? JSON.parse(licenseData.allowed_domains) : []);
 
   return (
     <div className="space-y-6">
@@ -127,8 +124,8 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
               Allowed Domains
             </h2>
             <div className="space-y-2">
-              {licenseData.allowed_domains.length > 0 ? (
-                licenseData.allowed_domains.map(domain => (
+              {allowedDomains && allowedDomains.length > 0 ? (
+                allowedDomains.map((domain: string) => (
                   <div key={domain} className="bg-slate-50 dark:bg-slate-800 p-2 rounded-md">
                     {domain}
                   </div>
@@ -138,6 +135,9 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
               )}
             </div>
           </div>
+          
+          {/* Add activation form */}
+          <ActivationForm licenseKey={licenseData.license_key} />
         </div>
 
         <div className="space-y-6">
@@ -149,7 +149,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Current</h3>
-                <p className="text-2xl font-bold">{licenseData.current_activations}</p>
+                <p className="text-2xl font-bold">{currentActivations}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Maximum</h3>
@@ -158,29 +158,33 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             </div>
             <div className="space-y-4">
               <h3 className="text-md font-medium">Recent Activations</h3>
-              {activations.map(activation => (
-                <div key={activation.id} className="border rounded-md p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="font-medium">{activation.domain}</div>
-                    <span className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      activation.is_active 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-red-100 text-red-800"
-                    }`}>
-                      {activation.is_active ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    <div>IP: {activation.ip_address}</div>
-                    <div className="truncate" title={activation.user_agent}>
-                      UA: {activation.user_agent.substring(0, 40)}...
+              {activations.length > 0 ? (
+                activations.map((activation: any) => (
+                  <div key={activation.id} className="border rounded-md p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="font-medium">{activation.domain}</div>
+                      <span className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        activation.is_active 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {activation.is_active ? "Active" : "Inactive"}
+                      </span>
                     </div>
-                    <div>
-                      Activated: {new Date(activation.created_at).toLocaleString()}
+                    <div className="text-xs text-muted-foreground">
+                      <div>IP: {activation.ip_address}</div>
+                      <div className="truncate" title={activation.user_agent}>
+                        UA: {activation.user_agent ? activation.user_agent.substring(0, 40) + '...' : 'Unknown'}
+                      </div>
+                      <div>
+                        Activated: {new Date(activation.created_at).toLocaleString()}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No activations found</p>
+              )}
             </div>
           </div>
 

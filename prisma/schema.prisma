@@ -88,8 +88,6 @@ model User {
   name          String    @db.VarChar(255)
   password      String    @db.VarChar(255)
   role          Role      @default(admin)
-  email_verified DateTime?
-  image         String?   @db.VarChar(255)
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
