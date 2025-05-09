@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Building2, Plus } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
 import { OrganizationDeleteButton } from "@/components/OrganizationDeleteButton";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface Organization {
   id: string | number;
@@ -36,27 +38,16 @@ export default async function OrganizationsPage() {
             Manage your client organizations
           </p>
         </div>
-        <Link
-          href="/organizations/new"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          <Building2 className="mr-2 h-4 w-4" />
-          New Organization
-        </Link>
+        <Button asChild>
+          <Link href="/organizations/new">
+            <Plus className="h-4 w-4" />
+            <Building2 className="h-4 w-4" />
+            New Organization
+          </Link>
+        </Button>
       </div>
 
-      <div className="rounded-md border">
-        <div className="p-4 flex items-center justify-between border-b">
-          <h2 className="text-lg font-medium">Your Organizations</h2>
-          <div className="relative w-64">
-            <input
-              type="text"
-              placeholder="Search organizations..."
-              className="w-full rounded-md border border-input px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
-          </div>
-        </div>
+      <Card className="border shadow-sm">
         <div className="divide-y">
           {organizations.length > 0 ? (
             organizations.map((org) => (
@@ -64,31 +55,52 @@ export default async function OrganizationsPage() {
                 key={String(org.id)}
                 className="flex items-center justify-between p-4"
               >
-                <div>
-                  <h3 className="font-medium">{org.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {org.contact_email}
-                  </p>
+                <div className="flex-1 space-y-1.5">
+                  <h3 className="font-semibold text-foreground">{org.name}</h3>
+                  <div className="grid gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium">Email:</span>
+                      <span className="text-sm text-muted-foreground">
+                        {org.contact_email}
+                      </span>
+                    </div>
+                    {org.contact_name && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium">Contact:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {org.contact_name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link
-                    href={`/organizations/${org.id}`}
-                    className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    View
-                  </Link>
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href={`/organizations/${org.id}`}>View</Link>
+                  </Button>
                   <OrganizationDeleteButton organizationId={org.id} />
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-muted-foreground">
-              No organizations found. Create your first organization to get
-              started.
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <Building2 className="h-12 w-12 text-muted-foreground/50 mb-3" />
+              <h3 className="text-lg font-medium mb-1">
+                No organizations found
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create your first organization to get started.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/organizations/new">
+                  <Plus className="h-4 w-4 mr-1" />
+                  New Organization
+                </Link>
+              </Button>
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

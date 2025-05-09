@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Package, Plus } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
 import { ProductDeleteButton } from "@/components/ProductDeleteButton";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface Product {
   id: string | number;
@@ -29,29 +31,18 @@ export default async function ProductsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">Manage your software products</p>
+          <p className="text-muted-foreground">Manage your products</p>
         </div>
-        <Link
-          href="/products/new"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          <Package className="mr-2 h-4 w-4" />
-          New Product
-        </Link>
+        <Button asChild>
+          <Link href="/products/new">
+            <Plus className="h-4 w-4" />
+            <Package className="h-4 w-4" />
+            New Product
+          </Link>
+        </Button>
       </div>
 
-      <div className="rounded-md border">
-        <div className="p-4 flex items-center justify-between border-b">
-          <h2 className="text-lg font-medium">Your Products</h2>
-          <div className="relative w-64">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full rounded-md border border-input px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
-          </div>
-        </div>
+      <Card className="border shadow-sm">
         <div className="divide-y">
           {products.length > 0 ? (
             products.map((product) => (
@@ -59,30 +50,39 @@ export default async function ProductsPage() {
                 key={String(product.id)}
                 className="flex items-center justify-between p-4"
               >
-                <div>
-                  <h3 className="font-medium">{product.name}</h3>
+                <div className="flex-1 space-y-1.5">
+                  <h3 className="font-semibold text-foreground">
+                    {product.name}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     {product.description || "No description"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link
-                    href={`/products/${product.id}`}
-                    className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    View
-                  </Link>
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href={`/products/${product.id}`}>View</Link>
+                  </Button>
                   <ProductDeleteButton productId={product.id} />
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-muted-foreground">
-              No products found. Create your first product to get started.
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <Package className="h-12 w-12 text-muted-foreground/50 mb-3" />
+              <h3 className="text-lg font-medium mb-1">No products found</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create your first product to get started.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/products/new">
+                  <Plus className="h-4 w-4 mr-1" />
+                  New Product
+                </Link>
+              </Button>
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
