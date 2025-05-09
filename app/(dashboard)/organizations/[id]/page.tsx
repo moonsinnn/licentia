@@ -1,13 +1,22 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { ChevronLeft, Building2, Mail, User, Calendar, Key } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
+import Link from "next/link";
+import {
+  ChevronLeft,
+  Building2,
+  Mail,
+  User,
+  Calendar,
+  Key,
+} from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import { OrganizationDeleteButton } from "@/components/organization-delete-button";
+import { LicenseDeleteButton } from "@/components/license-delete-button";
 
 interface OrganizationViewPageProps {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 interface Organization {
@@ -33,10 +42,12 @@ interface License {
 
 async function getOrganizationData(id: string) {
   try {
-    const response = await getFromApi<{ organization: Organization }>(`/api/organizations/${id}`);
+    const response = await getFromApi<{ organization: Organization }>(
+      `/api/organizations/${id}`
+    );
     return response.organization;
   } catch (error) {
-    console.error('Error fetching organization:', error);
+    console.error("Error fetching organization:", error);
     // Return fallback data if API request fails
     return {
       id,
@@ -51,35 +62,41 @@ async function getOrganizationData(id: string) {
 
 async function getOrganizationLicenses(id: string) {
   try {
-    const response = await getFromApi<{ licenses: License[] }>(`/api/organizations/${id}/licenses`);
+    const response = await getFromApi<{ licenses: License[] }>(
+      `/api/organizations/${id}/licenses`
+    );
     return response.licenses;
   } catch (error) {
-    console.error('Error fetching organization licenses:', error);
+    console.error("Error fetching organization licenses:", error);
     return [];
   }
 }
 
-export default async function OrganizationViewPage({ params }: OrganizationViewPageProps) {
+export default async function OrganizationViewPage({
+  params,
+}: OrganizationViewPageProps) {
   const { id } = await params;
-  
+
   // Fetch data in parallel
   const [organization, licenses] = await Promise.all([
     getOrganizationData(id),
-    getOrganizationLicenses(id)
+    getOrganizationLicenses(id),
   ]);
 
   return (
     <div className="space-y-6">
       <div>
-        <Link 
-          href="/organizations" 
+        <Link
+          href="/organizations"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Organizations
         </Link>
         <div className="mt-2 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">{organization.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {organization.name}
+          </h1>
           <div className="flex items-center gap-2">
             <Link
               href={`/organizations/${id}/edit`}
@@ -87,6 +104,7 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
             >
               Edit Organization
             </Link>
+            <OrganizationDeleteButton organizationId={id} variant="button" />
             <Link
               href={`/licenses/new?organization=${id}`}
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
@@ -117,7 +135,10 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
                 Contact Email
               </dt>
               <dd>
-                <a href={`mailto:${organization.contact_email}`} className="text-primary hover:underline">
+                <a
+                  href={`mailto:${organization.contact_email}`}
+                  className="text-primary hover:underline"
+                >
                   {organization.contact_email}
                 </a>
               </dd>
@@ -145,10 +166,10 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
               Add new license
             </Link>
           </div>
-          
+
           {licenses && licenses.length > 0 ? (
             <div className="space-y-4">
-              {licenses.map(license => (
+              {licenses.map((license) => (
                 <div key={String(license.id)} className="border rounded-md p-4">
                   <div className="flex justify-between items-start mb-2">
                     <Link
@@ -157,23 +178,30 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
                     >
                       {license.license_key}
                     </Link>
-                    <span className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      license.is_active 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-red-100 text-red-800"
-                    }`}>
-                      {license.is_active ? "Active" : "Inactive"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          license.is_active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {license.is_active ? "Active" : "Inactive"}
+                      </span>
+                      <LicenseDeleteButton licenseId={license.id} />
+                    </div>
                   </div>
                   <div className="text-sm text-muted-foreground">
+                    <div>Product: {license.product.name}</div>
                     <div>
-                      Product: {license.product.name}
+                      Created:{" "}
+                      {new Date(license.created_at).toLocaleDateString()}
                     </div>
                     <div>
-                      Created: {new Date(license.created_at).toLocaleDateString()}
-                    </div>
-                    <div>
-                      Expires: {license.expires_at ? new Date(license.expires_at).toLocaleDateString() : "Never"}
+                      Expires:{" "}
+                      {license.expires_at
+                        ? new Date(license.expires_at).toLocaleDateString()
+                        : "Never"}
                     </div>
                   </div>
                 </div>
@@ -193,5 +221,5 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

@@ -1,8 +1,9 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { Package, Plus } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
+import Link from "next/link";
+import { Package, Plus } from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import { ProductDeleteButton } from "@/components/product-delete-button";
 
 interface Product {
   id: string | number;
@@ -12,10 +13,10 @@ interface Product {
 
 async function getProducts(): Promise<Product[]> {
   try {
-    const data = await getFromApi<{ products: Product[] }>('/api/products');
+    const data = await getFromApi<{ products: Product[] }>("/api/products");
     return data.products || [];
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return [];
   }
 }
@@ -28,9 +29,7 @@ export default async function ProductsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">
-            Manage your software products
-          </p>
+          <p className="text-muted-foreground">Manage your software products</p>
         </div>
         <Link
           href="/products/new"
@@ -56,20 +55,24 @@ export default async function ProductsPage() {
         <div className="divide-y">
           {products.length > 0 ? (
             products.map((product) => (
-              <div key={String(product.id)} className="flex items-center justify-between p-4">
+              <div
+                key={String(product.id)}
+                className="flex items-center justify-between p-4"
+              >
                 <div>
                   <h3 className="font-medium">{product.name}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {product.description || 'No description'}
+                    {product.description || "No description"}
                   </p>
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/products/${product.id}`}
                     className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     View
                   </Link>
+                  <ProductDeleteButton productId={product.id} />
                 </div>
               </div>
             ))
@@ -81,5 +84,5 @@ export default async function ProductsPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

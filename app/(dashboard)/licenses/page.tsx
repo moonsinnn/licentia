@@ -1,8 +1,9 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { Key, Plus } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
+import Link from "next/link";
+import { Key, Plus } from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import { LicenseDeleteButton } from "@/components/license-delete-button";
 
 interface License {
   id: string | number;
@@ -22,10 +23,10 @@ interface License {
 
 async function getLicenses(): Promise<License[]> {
   try {
-    const data = await getFromApi<{ licenses: License[] }>('/api/licenses');
+    const data = await getFromApi<{ licenses: License[] }>("/api/licenses");
     return data.licenses || [];
   } catch (error) {
-    console.error('Error fetching licenses:', error);
+    console.error("Error fetching licenses:", error);
     return [];
   }
 }
@@ -66,7 +67,10 @@ export default async function LicensesPage() {
         <div className="divide-y">
           {licenses.length > 0 ? (
             licenses.map((license) => (
-              <div key={String(license.id)} className="flex items-center justify-between p-4">
+              <div
+                key={String(license.id)}
+                className="flex items-center justify-between p-4"
+              >
                 <div className="flex-1">
                   <h3 className="font-medium">{license.license_key}</h3>
                   <div className="flex items-center gap-2">
@@ -78,27 +82,32 @@ export default async function LicensesPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      license.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {license.is_active ? 'Active' : 'Inactive'}
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        license.is_active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {license.is_active ? "Active" : "Inactive"}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {license.expires_at 
-                        ? `Expires: ${new Date(license.expires_at).toLocaleDateString()}` 
-                        : 'Expires: Never'}
+                      {license.expires_at
+                        ? `Expires: ${new Date(
+                            license.expires_at
+                          ).toLocaleDateString()}`
+                        : "Expires: Never"}
                     </span>
                   </div>
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/licenses/${license.id}`}
                     className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     View
                   </Link>
+                  <LicenseDeleteButton licenseId={license.id} />
                 </div>
               </div>
             ))
@@ -110,5 +119,5 @@ export default async function LicensesPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

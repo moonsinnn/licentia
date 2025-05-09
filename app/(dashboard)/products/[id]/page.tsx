@@ -1,13 +1,21 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { ChevronLeft, Package, AlignJustify, Calendar, Key } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
+import Link from "next/link";
+import {
+  ChevronLeft,
+  Package,
+  AlignJustify,
+  Calendar,
+  Key,
+} from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import { ProductDeleteButton } from "@/components/product-delete-button";
+import { LicenseDeleteButton } from "@/components/license-delete-button";
 
 interface ProductViewPageProps {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 interface Product {
@@ -32,10 +40,12 @@ interface License {
 
 async function getProductData(id: string) {
   try {
-    const response = await getFromApi<{ product: Product }>(`/api/products/${id}`);
+    const response = await getFromApi<{ product: Product }>(
+      `/api/products/${id}`
+    );
     return response.product;
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error("Error fetching product:", error);
     // Return fallback data if API request fails
     return {
       id,
@@ -49,28 +59,32 @@ async function getProductData(id: string) {
 
 async function getProductLicenses(id: string) {
   try {
-    const response = await getFromApi<{ licenses: License[] }>(`/api/products/${id}/licenses`);
+    const response = await getFromApi<{ licenses: License[] }>(
+      `/api/products/${id}/licenses`
+    );
     return response.licenses;
   } catch (error) {
-    console.error('Error fetching product licenses:', error);
+    console.error("Error fetching product licenses:", error);
     return [];
   }
 }
 
-export default async function ProductViewPage({ params }: ProductViewPageProps) {
+export default async function ProductViewPage({
+  params,
+}: ProductViewPageProps) {
   const { id } = await params;
-  
+
   // Fetch data in parallel
   const [product, licenses] = await Promise.all([
     getProductData(id),
-    getProductLicenses(id)
+    getProductLicenses(id),
   ]);
 
   return (
     <div className="space-y-6">
       <div>
-        <Link 
-          href="/products" 
+        <Link
+          href="/products"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -85,6 +99,7 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
             >
               Edit Product
             </Link>
+            <ProductDeleteButton productId={id} variant="button" />
             <Link
               href={`/licenses/new?product=${id}`}
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
@@ -114,14 +129,18 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
                 <Calendar className="h-4 w-4" />
                 Created
               </dt>
-              <dd className="text-sm">{new Date(product.created_at).toLocaleString()}</dd>
+              <dd className="text-sm">
+                {new Date(product.created_at).toLocaleString()}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 Last Updated
               </dt>
-              <dd className="text-sm">{new Date(product.updated_at).toLocaleString()}</dd>
+              <dd className="text-sm">
+                {new Date(product.updated_at).toLocaleString()}
+              </dd>
             </div>
           </dl>
         </div>
@@ -139,10 +158,10 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
               Issue new license
             </Link>
           </div>
-          
+
           {licenses && licenses.length > 0 ? (
             <div className="space-y-4">
-              {licenses.map(license => (
+              {licenses.map((license) => (
                 <div key={String(license.id)} className="border rounded-md p-4">
                   <div className="flex justify-between items-start mb-2">
                     <Link
@@ -151,23 +170,30 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
                     >
                       {license.license_key}
                     </Link>
-                    <span className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      license.is_active 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-red-100 text-red-800"
-                    }`}>
-                      {license.is_active ? "Active" : "Inactive"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          license.is_active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {license.is_active ? "Active" : "Inactive"}
+                      </span>
+                      <LicenseDeleteButton licenseId={license.id} />
+                    </div>
                   </div>
                   <div className="text-sm text-muted-foreground">
+                    <div>Organization: {license.organization.name}</div>
                     <div>
-                      Organization: {license.organization.name}
+                      Created:{" "}
+                      {new Date(license.created_at).toLocaleDateString()}
                     </div>
                     <div>
-                      Created: {new Date(license.created_at).toLocaleDateString()}
-                    </div>
-                    <div>
-                      Expires: {license.expires_at ? new Date(license.expires_at).toLocaleDateString() : "Never"}
+                      Expires:{" "}
+                      {license.expires_at
+                        ? new Date(license.expires_at).toLocaleDateString()
+                        : "Never"}
                     </div>
                   </div>
                 </div>
@@ -184,16 +210,22 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
               </Link>
             </div>
           )}
-          
+
           <div className="mt-4 pt-4 border-t">
             <h3 className="text-sm font-medium mb-2">License Statistics</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-sm text-muted-foreground">Active Licenses</div>
-                <div className="text-2xl font-bold">{licenses.filter(l => l.is_active).length}</div>
+                <div className="text-sm text-muted-foreground">
+                  Active Licenses
+                </div>
+                <div className="text-2xl font-bold">
+                  {licenses.filter((l) => l.is_active).length}
+                </div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Total Licenses</div>
+                <div className="text-sm text-muted-foreground">
+                  Total Licenses
+                </div>
                 <div className="text-2xl font-bold">{licenses.length}</div>
               </div>
             </div>
@@ -201,5 +233,5 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

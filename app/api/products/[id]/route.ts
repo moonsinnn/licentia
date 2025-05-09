@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, serializeData } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '@/lib/auth';
-import { checkRole } from '@/lib/api-utils';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma, serializeData } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { nextAuthOptions } from "@/lib/auth";
+import { checkRole } from "@/lib/api-utils";
 
 // GET /api/products/[id]
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
     const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -29,7 +29,7 @@ export async function GET(
 
     if (!product) {
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
+        { success: false, error: "Product not found" },
         { status: 404 }
       );
     }
@@ -42,9 +42,9 @@ export async function GET(
       product: serializedProduct,
     });
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error("Error fetching product:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch product' },
+      { success: false, error: "Failed to fetch product" },
       { status: 500 }
     );
   }
@@ -60,16 +60,16 @@ export async function PUT(
     const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
     // Check role using the check-role endpoint
-    const isAuthorized = await checkRole('super_admin');
+    const isAuthorized = await checkRole("super_admin");
     if (!isAuthorized) {
       return NextResponse.json(
-        { success: false, error: 'Forbidden: requires super admin privileges' },
+        { success: false, error: "Forbidden: requires super admin privileges" },
         { status: 403 }
       );
     }
@@ -82,9 +82,9 @@ export async function PUT(
     // Validate inputs
     if (!name && !description) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'At least one field to update is required' 
+        {
+          success: false,
+          error: "At least one field to update is required",
         },
         { status: 400 }
       );
@@ -97,7 +97,7 @@ export async function PUT(
 
     if (!existingProduct) {
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
+        { success: false, error: "Product not found" },
         { status: 404 }
       );
     }
@@ -107,7 +107,7 @@ export async function PUT(
       name?: string;
       description?: string;
     }
-    
+
     const updateData: UpdateData = {};
     if (name) updateData.name = name;
     if (description) updateData.description = description;
@@ -126,9 +126,9 @@ export async function PUT(
       product: serializedProduct,
     });
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error("Error updating product:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update product' },
+      { success: false, error: "Failed to update product" },
       { status: 500 }
     );
   }
@@ -144,16 +144,16 @@ export async function DELETE(
     const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
     // Check role using the check-role endpoint
-    const isAuthorized = await checkRole('admin');
+    const isAuthorized = await checkRole("super_admin");
     if (!isAuthorized) {
       return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
+        { success: false, error: "Forbidden: requires super admin privileges" },
         { status: 403 }
       );
     }
@@ -171,9 +171,10 @@ export async function DELETE(
 
     if (serializedLicenses.length > 0) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Cannot delete product with existing licenses. Delete the licenses first.'
+        {
+          success: false,
+          error:
+            "Cannot delete product with existing licenses. Delete the licenses first.",
         },
         { status: 400 }
       );
@@ -186,13 +187,13 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'Product deleted successfully',
+      message: "Product deleted successfully",
     });
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.error("Error deleting product:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete product' },
+      { success: false, error: "Failed to delete product" },
       { status: 500 }
     );
   }
-} 
+}

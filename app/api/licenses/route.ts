@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, serializeData, generateLicenseKey } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma, serializeData, generateLicenseKey } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { nextAuthOptions } from "@/lib/auth";
 
 // GET /api/licenses
 export async function GET() {
@@ -10,7 +10,7 @@ export async function GET() {
     const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -22,7 +22,7 @@ export async function GET() {
         product: true,
         license_activations: true,
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
     });
 
     // Serialize the data to handle BigInt values
@@ -33,9 +33,9 @@ export async function GET() {
       licenses: serializedLicenses,
     });
   } catch (error) {
-    console.error('Error fetching licenses:', error);
+    console.error("Error fetching licenses:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch licenses' },
+      { success: false, error: "Failed to fetch licenses" },
       { status: 500 }
     );
   }
@@ -48,26 +48,27 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
     const body = await request.json();
-    const { 
+    const {
       organization_id,
       product_id,
       allowed_domains,
       max_activations,
-      expires_at
+      expires_at,
     } = body;
 
     // Validate inputs
     if (!organization_id || !product_id || !max_activations) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Organization ID, product ID, and max activations are required' 
+        {
+          success: false,
+          error:
+            "Organization ID, product ID, and max activations are required",
         },
         { status: 400 }
       );
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     if (!organization) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
+        { success: false, error: "Organization not found" },
         { status: 404 }
       );
     }
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     if (!product) {
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
+        { success: false, error: "Product not found" },
         { status: 404 }
       );
     }
@@ -123,10 +124,10 @@ export async function POST(request: NextRequest) {
       license: serializedLicense,
     });
   } catch (error) {
-    console.error('Error creating license:', error);
+    console.error("Error creating license:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create license' },
+      { success: false, error: "Failed to create license" },
       { status: 500 }
     );
   }
-} 
+}

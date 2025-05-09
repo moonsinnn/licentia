@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, serializeData } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma, serializeData } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { nextAuthOptions } from "@/lib/auth";
+import { checkRole } from "@/lib/api-utils";
 
 // GET /api/products
 export async function GET() {
@@ -10,14 +11,14 @@ export async function GET() {
     const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
     // Get all products
     const products = await prisma.product.findMany({
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
     });
 
     // Serialize the data to handle BigInt values
@@ -28,9 +29,9 @@ export async function GET() {
       products: serializedProducts,
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch products' },
+      { success: false, error: "Failed to fetch products" },
       { status: 500 }
     );
   }
@@ -43,8 +44,16 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    const isAuthorized = await checkRole("super_admin");
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: requires super admin privileges" },
+        { status: 403 }
       );
     }
 
@@ -54,9 +63,9 @@ export async function POST(request: NextRequest) {
     // Validate inputs
     if (!name) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Product name is required' 
+        {
+          success: false,
+          error: "Product name is required",
         },
         { status: 400 }
       );
@@ -66,7 +75,7 @@ export async function POST(request: NextRequest) {
     const product = await prisma.product.create({
       data: {
         name,
-        description: description || '',
+        description: description || "",
       },
     });
 
@@ -78,10 +87,10 @@ export async function POST(request: NextRequest) {
       product: serializedProduct,
     });
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error("Error creating product:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create product' },
+      { success: false, error: "Failed to create product" },
       { status: 500 }
     );
   }
-} 
+}

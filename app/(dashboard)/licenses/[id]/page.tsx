@@ -1,14 +1,23 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { ChevronLeft, Key, Building2, Package, Clock, Users, Globe } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
-import ActivationForm from "@/components/ActivationForm"
+import Link from "next/link";
+import {
+  ChevronLeft,
+  Key,
+  Building2,
+  Package,
+  Clock,
+  Users,
+  Globe,
+} from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import ActivationForm from "@/components/ActivationForm";
+import { LicenseDeleteButton } from "@/components/license-delete-button";
 
 interface LicenseViewPageProps {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 interface LicenseActivation {
@@ -40,25 +49,32 @@ interface License {
 
 async function getLicenseData(id: string) {
   try {
-    const response = await getFromApi<{ license: License }>(`/api/licenses/${id}`);
+    const response = await getFromApi<{ license: License }>(
+      `/api/licenses/${id}`
+    );
     return response.license;
   } catch (error) {
-    console.error('Error fetching license:', error);
+    console.error("Error fetching license:", error);
     return null;
   }
 }
 
-export default async function LicenseViewPage({ params }: LicenseViewPageProps) {
+export default async function LicenseViewPage({
+  params,
+}: LicenseViewPageProps) {
   const { id } = await params;
   const licenseData = await getLicenseData(id);
-  
+
   if (!licenseData) {
     return (
       <div className="p-6 text-center">
         <h1 className="text-xl font-bold">License not found</h1>
-        <p className="mt-2 text-muted-foreground">The license you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.</p>
-        <Link 
-          href="/licenses" 
+        <p className="mt-2 text-muted-foreground">
+          The license you&apos;re looking for doesn&apos;t exist or you
+          don&apos;t have permission to view it.
+        </p>
+        <Link
+          href="/licenses"
           className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -67,21 +83,25 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
       </div>
     );
   }
-  
+
   // Format data for display
   const activations = licenseData.license_activations || [];
-  const currentActivations = activations.filter((act: LicenseActivation) => act.is_active).length;
-  
+  const currentActivations = activations.filter(
+    (act: LicenseActivation) => act.is_active
+  ).length;
+
   // Ensure allowed_domains is an array
-  const allowedDomains = Array.isArray(licenseData.allowed_domains) 
-    ? licenseData.allowed_domains 
-    : (licenseData.allowed_domains ? JSON.parse(licenseData.allowed_domains as string) : []);
+  const allowedDomains = Array.isArray(licenseData.allowed_domains)
+    ? licenseData.allowed_domains
+    : licenseData.allowed_domains
+    ? JSON.parse(licenseData.allowed_domains as string)
+    : [];
 
   return (
     <div className="space-y-6">
       <div>
-        <Link 
-          href="/licenses" 
+        <Link
+          href="/licenses"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -96,6 +116,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             >
               Edit License
             </Link>
+            <LicenseDeleteButton licenseId={id} variant="button" />
           </div>
         </div>
       </div>
@@ -108,11 +129,13 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
                 <Key className="h-5 w-5" />
                 License Key
               </h2>
-              <span className={`inline-flex h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                licenseData.is_active 
-                  ? "bg-green-100 text-green-800" 
-                  : "bg-red-100 text-red-800"
-              }`}>
+              <span
+                className={`inline-flex h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  licenseData.is_active
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
                 {licenseData.is_active ? "Active" : "Inactive"}
               </span>
             </div>
@@ -125,7 +148,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
                   <Building2 className="h-4 w-4" />
                   Organization
                 </h3>
-                <Link 
+                <Link
                   href={`/organizations/${licenseData.organization.id}`}
                   className="text-primary hover:underline"
                 >
@@ -137,7 +160,7 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
                   <Package className="h-4 w-4" />
                   Product
                 </h3>
-                <Link 
+                <Link
                   href={`/products/${licenseData.product.id}`}
                   className="text-primary hover:underline"
                 >
@@ -155,16 +178,21 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             <div className="space-y-2">
               {allowedDomains && allowedDomains.length > 0 ? (
                 allowedDomains.map((domain: string) => (
-                  <div key={domain} className="bg-slate-50 dark:bg-slate-800 p-2 rounded-md">
+                  <div
+                    key={domain}
+                    className="bg-slate-50 dark:bg-slate-800 p-2 rounded-md"
+                  >
                     {domain}
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No domain restrictions</p>
+                <p className="text-sm text-muted-foreground">
+                  No domain restrictions
+                </p>
               )}
             </div>
           </div>
-          
+
           {/* Add activation form */}
           <ActivationForm licenseKey={licenseData.license_key} />
         </div>
@@ -177,12 +205,18 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Current</h3>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Current
+                </h3>
                 <p className="text-2xl font-bold">{currentActivations}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Maximum</h3>
-                <p className="text-2xl font-bold">{licenseData.max_activations}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Maximum
+                </h3>
+                <p className="text-2xl font-bold">
+                  {licenseData.max_activations}
+                </p>
               </div>
             </div>
             <div className="space-y-4">
@@ -192,27 +226,38 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
                   <div key={activation.id} className="border rounded-md p-3">
                     <div className="flex justify-between items-start mb-2">
                       <div className="font-medium">{activation.domain}</div>
-                      <span className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        activation.is_active 
-                          ? "bg-green-100 text-green-800" 
-                          : "bg-red-100 text-red-800"
-                      }`}>
+                      <span
+                        className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          activation.is_active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {activation.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       <div>IP: {activation.ip_address}</div>
-                      <div className="truncate" title={activation.user_agent || undefined}>
-                        UA: {activation.user_agent ? activation.user_agent.substring(0, 40) + '...' : 'Unknown'}
+                      <div
+                        className="truncate"
+                        title={activation.user_agent || undefined}
+                      >
+                        UA:{" "}
+                        {activation.user_agent
+                          ? activation.user_agent.substring(0, 40) + "..."
+                          : "Unknown"}
                       </div>
                       <div>
-                        Activated: {new Date(activation.created_at).toLocaleString()}
+                        Activated:{" "}
+                        {new Date(activation.created_at).toLocaleString()}
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No activations found</p>
+                <p className="text-sm text-muted-foreground">
+                  No activations found
+                </p>
               )}
             </div>
           </div>
@@ -224,17 +269,25 @@ export default async function LicenseViewPage({ params }: LicenseViewPageProps) 
             </h2>
             <div className="space-y-3">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Created
+                </h3>
                 <p>{new Date(licenseData.created_at).toLocaleString()}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Expires</h3>
-                <p>{licenseData.expires_at ? new Date(licenseData.expires_at).toLocaleString() : "Never"}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Expires
+                </h3>
+                <p>
+                  {licenseData.expires_at
+                    ? new Date(licenseData.expires_at).toLocaleString()
+                    : "Never"}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

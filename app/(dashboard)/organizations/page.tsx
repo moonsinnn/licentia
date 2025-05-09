@@ -1,8 +1,9 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { Building2, Plus } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
+import Link from "next/link";
+import { Building2, Plus } from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import { OrganizationDeleteButton } from "@/components/organization-delete-button";
 
 interface Organization {
   id: string | number;
@@ -13,10 +14,12 @@ interface Organization {
 
 async function getOrganizations(): Promise<Organization[]> {
   try {
-    const data = await getFromApi<{ organizations: Organization[] }>('/api/organizations');
+    const data = await getFromApi<{ organizations: Organization[] }>(
+      "/api/organizations"
+    );
     return data.organizations || [];
   } catch (error) {
-    console.error('Error fetching organizations:', error);
+    console.error("Error fetching organizations:", error);
     return [];
   }
 }
@@ -57,30 +60,35 @@ export default async function OrganizationsPage() {
         <div className="divide-y">
           {organizations.length > 0 ? (
             organizations.map((org) => (
-              <div key={String(org.id)} className="flex items-center justify-between p-4">
+              <div
+                key={String(org.id)}
+                className="flex items-center justify-between p-4"
+              >
                 <div>
                   <h3 className="font-medium">{org.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {org.contact_email}
                   </p>
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/organizations/${org.id}`}
                     className="inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     View
                   </Link>
+                  <OrganizationDeleteButton organizationId={org.id} />
                 </div>
               </div>
             ))
           ) : (
             <div className="p-4 text-center text-muted-foreground">
-              No organizations found. Create your first organization to get started.
+              No organizations found. Create your first organization to get
+              started.
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

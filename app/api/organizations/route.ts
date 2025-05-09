@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, serializeData } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma, serializeData } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { nextAuthOptions } from "@/lib/auth";
+import { checkRole } from "@/lib/api-utils";
 
 // GET /api/organizations
 export async function GET() {
@@ -10,14 +11,14 @@ export async function GET() {
     const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
     // Get all organizations
     const organizations = await prisma.organization.findMany({
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
     });
 
     // Serialize the data to handle BigInt values
@@ -28,9 +29,9 @@ export async function GET() {
       organizations: serializedOrganizations,
     });
   } catch (error) {
-    console.error('Error fetching organizations:', error);
+    console.error("Error fetching organizations:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch organizations' },
+      { success: false, error: "Failed to fetch organizations" },
       { status: 500 }
     );
   }
@@ -43,8 +44,16 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    const isAuthorized = await checkRole("super_admin");
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: requires super admin privileges" },
+        { status: 403 }
       );
     }
 
@@ -54,9 +63,9 @@ export async function POST(request: NextRequest) {
     // Validate inputs
     if (!name || !contact_email || !contact_name) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Name, contact email, and contact name are required' 
+        {
+          success: false,
+          error: "Name, contact email, and contact name are required",
         },
         { status: 400 }
       );
@@ -79,10 +88,10 @@ export async function POST(request: NextRequest) {
       organization: serializedOrganization,
     });
   } catch (error) {
-    console.error('Error creating organization:', error);
+    console.error("Error creating organization:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create organization' },
+      { success: false, error: "Failed to create organization" },
       { status: 500 }
     );
   }
-} 
+}
