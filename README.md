@@ -54,7 +54,6 @@
 ### System Requirements
 
 - **Runtime**: Node.js 18+ or Bun (recommended)
-- **Database**: MySQL 8.0+
 
 ### Quick Installation
 
@@ -84,7 +83,7 @@ bun install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your database credentials and other required settings.
+Edit `.env.local` with your connection details and other required settings.
 
 </details>
 
@@ -235,7 +234,7 @@ For comprehensive documentation, visit our [API Reference](#)(TBD).
       <td align="center"><strong>shadcn/ui</strong></td>
     </tr>
     <tr>
-      <td align="center"><strong>MySQL</strong></td>
+      <td align="center"><strong>PostgreSQL</strong></td>
       <td align="center"><strong>Prisma ORM</strong></td>
       <td align="center"><strong>NextAuth.js</strong></td>
     </tr>
