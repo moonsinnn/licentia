@@ -1,12 +1,14 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 import ProductForm from "@/components/ProductForm"
 
 interface ProductEditPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface Product {
@@ -35,14 +37,14 @@ async function getProductData(id: string) {
 }
 
 export default async function ProductEditPage({ params }: ProductEditPageProps) {
-  const productId = (await params).id;
-  const product = await getProductData(productId);
+  const { id } = await params;
+  const product = await getProductData(id);
 
   return (
     <div className="space-y-6">
       <div>
         <Link 
-          href={`/products/${productId}`} 
+          href={`/products/${id}`} 
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />

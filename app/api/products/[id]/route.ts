@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 // GET /api/products/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const session = await getServerSession(nextAuthOptions);
+    if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const productId = BigInt(id);
 
     // Get product
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: productId },
     });
 
     if (!product) {
@@ -51,24 +52,34 @@ export async function GET(
 // PUT /api/products/[id]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const session = await getServerSession(nextAuthOptions);
+    if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const id = BigInt((await params).id);
+    // Check role - only admins can update products
+    const userRole = session.user.role;
+    if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    const { id } = await params;
+    const productId = BigInt(id);
     const body = await request.json();
     const { name, description } = body;
 
     // Validate inputs
-    if (!name && description === undefined) {
+    if (!name && !description) {
       return NextResponse.json(
         { 
           success: false, 
@@ -80,7 +91,7 @@ export async function PUT(
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
-      where: { id },
+      where: { id: productId },
     });
 
     if (!existingProduct) {
@@ -98,11 +109,11 @@ export async function PUT(
     
     const updateData: UpdateData = {};
     if (name) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
+    if (description) updateData.description = description;
 
     // Update product
     const product = await prisma.product.update({
-      where: { id },
+      where: { id: productId },
       data: updateData,
     });
 
@@ -125,31 +136,33 @@ export async function PUT(
 // DELETE /api/products/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const session = await getServerSession(nextAuthOptions);
+    if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Only super_admin can delete products
-    if (session.user?.role !== 'super_admin') {
+    // Check role - only admins can delete products
+    const userRole = session.user.role;
+    if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
       return NextResponse.json(
-        { success: false, error: 'Forbidden: requires super admin privileges' },
+        { success: false, error: 'Insufficient permissions' },
         { status: 403 }
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const productId = BigInt(id);
 
     // Check if there are any licenses for this product
     const licenses = await prisma.license.findMany({
-      where: { product_id: id },
+      where: { product_id: productId },
     });
 
     // Serialize licenses for the check
@@ -167,7 +180,7 @@ export async function DELETE(
 
     // Delete product
     await prisma.product.delete({
-      where: { id },
+      where: { id: productId },
     });
 
     return NextResponse.json({

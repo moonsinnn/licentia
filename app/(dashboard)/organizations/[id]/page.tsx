@@ -1,11 +1,13 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { ChevronLeft, Building2, Mail, User, Calendar, Key } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 
 interface OrganizationViewPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface Organization {
@@ -58,12 +60,12 @@ async function getOrganizationLicenses(id: string) {
 }
 
 export default async function OrganizationViewPage({ params }: OrganizationViewPageProps) {
-  const orgId = (await params).id;
+  const { id } = await params;
   
   // Fetch data in parallel
   const [organization, licenses] = await Promise.all([
-    getOrganizationData(orgId),
-    getOrganizationLicenses(orgId)
+    getOrganizationData(id),
+    getOrganizationLicenses(id)
   ]);
 
   return (
@@ -80,13 +82,13 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
           <h1 className="text-3xl font-bold tracking-tight">{organization.name}</h1>
           <div className="flex items-center gap-2">
             <Link
-              href={`/organizations/${orgId}/edit`}
+              href={`/organizations/${id}/edit`}
               className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
             >
               Edit Organization
             </Link>
             <Link
-              href={`/licenses/new?organization=${orgId}`}
+              href={`/licenses/new?organization=${id}`}
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
             >
               Add License
@@ -137,7 +139,7 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
               Licenses
             </h2>
             <Link
-              href={`/licenses/new?organization=${orgId}`}
+              href={`/licenses/new?organization=${id}`}
               className="text-sm text-primary hover:underline"
             >
               Add new license
@@ -181,7 +183,7 @@ export default async function OrganizationViewPage({ params }: OrganizationViewP
             <div className="text-center py-6 text-muted-foreground">
               <p>No licenses found for this organization</p>
               <Link
-                href={`/licenses/new?organization=${orgId}`}
+                href={`/licenses/new?organization=${id}`}
                 className="mt-2 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
               >
                 Create first license

@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 // GET /api/products/[id]/licenses
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -18,11 +18,12 @@ export async function GET(
       );
     }
 
-    const id = BigInt((await params).id);
-
+    const { id } = await params;
+    const productId = BigInt(id);
+    
     // Check if product exists
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: productId },
     });
 
     if (!product) {
@@ -34,14 +35,15 @@ export async function GET(
 
     // Get all licenses for this product
     const licenses = await prisma.license.findMany({
-      where: { product_id: id },
+      where: { product_id: productId },
       include: {
         organization: true,
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: {
+        created_at: 'desc',
+      },
     });
 
-    // Serialize the data to handle BigInt values
     const serializedLicenses = serializeData(licenses);
 
     return NextResponse.json({
@@ -51,7 +53,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching product licenses:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch product licenses' },
+      { success: false, error: 'Failed to fetch licenses' },
       { status: 500 }
     );
   }

@@ -1,12 +1,14 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 import LicenseForm from "@/components/LicenseForm"
 
 interface LicenseEditPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface Organization {
@@ -65,11 +67,11 @@ async function getProducts() {
 }
 
 export default async function LicenseEditPage({ params }: LicenseEditPageProps) {
-  const licenseId = (await params).id;
+  const { id } = await params;
   
   // Fetch data in parallel
   const [license, organizations, products] = await Promise.all([
-    getLicenseData(licenseId),
+    getLicenseData(id),
     getOrganizations(),
     getProducts()
   ]);
@@ -94,7 +96,7 @@ export default async function LicenseEditPage({ params }: LicenseEditPageProps) 
     <div className="space-y-6">
       <div>
         <Link 
-          href={`/licenses/${licenseId}`} 
+          href={`/licenses/${id}`} 
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />

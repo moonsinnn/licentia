@@ -1,5 +1,7 @@
 import { Settings, User, Bell, Shield, Mail, CreditCard } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default function SettingsPage() {
   return (
     <div className="space-y-6">

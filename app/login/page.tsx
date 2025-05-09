@@ -1,11 +1,13 @@
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import LoginForm from '@/components/LoginForm';
 
+export const dynamic = 'force-dynamic'
+
 export default async function LoginPage() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     
     if (session) {
       redirect('/dashboard');

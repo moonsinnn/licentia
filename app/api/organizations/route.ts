@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 // GET /api/organizations
 export async function GET() {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -40,7 +40,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

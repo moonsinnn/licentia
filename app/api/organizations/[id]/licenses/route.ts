@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 // GET /api/organizations/[id]/licenses
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -18,11 +18,12 @@ export async function GET(
       );
     }
 
-    const id = BigInt((await params).id);
-
+    const { id } = await params;
+    const orgId = BigInt(id);
+    
     // Verify organization exists
     const organization = await prisma.organization.findUnique({
-      where: { id },
+      where: { id: orgId },
     });
 
     if (!organization) {
@@ -32,16 +33,18 @@ export async function GET(
       );
     }
 
-    // Get all licenses for the organization
+    // Get all licenses for this organization
     const licenses = await prisma.license.findMany({
-      where: { organization_id: id },
+      where: { organization_id: orgId },
       include: {
         product: true,
         license_activations: {
           where: { is_active: true }  // Only include active activations for counting
         },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: {
+        created_at: 'desc',
+      },
     });
 
     // Serialize the data to handle BigInt values

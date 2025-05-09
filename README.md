@@ -50,7 +50,17 @@ cp .env.example .env.local
 bunx prisma migrate dev
 ```
 
-6. Start the development server:
+6. Generate Prisma client:
+```bash
+bunx prisma generate
+```
+
+7. Seed the database:
+```bash
+bunx prisma db seed
+```
+
+8. Start the development server:
 ```bash
 bun run dev
 ```

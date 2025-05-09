@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 // GET /api/organizations/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -18,11 +18,12 @@ export async function GET(
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const orgId = BigInt(id);
 
     // Get organization
     const organization = await prisma.organization.findUnique({
-      where: { id },
+      where: { id: orgId },
     });
 
     if (!organization) {
@@ -51,11 +52,11 @@ export async function GET(
 // PUT /api/organizations/[id]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -63,7 +64,8 @@ export async function PUT(
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const orgId = BigInt(id);
     const body = await request.json();
     const { name, contact_email, contact_name } = body;
 
@@ -80,7 +82,7 @@ export async function PUT(
 
     // Check if organization exists
     const existingOrg = await prisma.organization.findUnique({
-      where: { id },
+      where: { id: orgId },
     });
 
     if (!existingOrg) {
@@ -104,7 +106,7 @@ export async function PUT(
 
     // Update organization
     const organization = await prisma.organization.update({
-      where: { id },
+      where: { id: orgId },
       data: updateData,
     });
 
@@ -127,11 +129,11 @@ export async function PUT(
 // DELETE /api/organizations/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -147,11 +149,12 @@ export async function DELETE(
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const orgId = BigInt(id);
 
     // Check if there are any licenses for this organization
     const licenses = await prisma.license.findMany({
-      where: { organization_id: id },
+      where: { organization_id: orgId },
     });
 
     // Serialize licenses for the check
@@ -169,7 +172,7 @@ export async function DELETE(
 
     // Delete organization
     await prisma.organization.delete({
-      where: { id },
+      where: { id: orgId },
     });
 
     return NextResponse.json({

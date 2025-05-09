@@ -1,12 +1,14 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 import OrganizationForm from "@/components/OrganizationForm"
 
 interface OrganizationEditPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface Organization {
@@ -37,14 +39,14 @@ async function getOrganizationData(id: string) {
 }
 
 export default async function OrganizationEditPage({ params }: OrganizationEditPageProps) {
-  const orgId = (await params).id;
-  const organization = await getOrganizationData(orgId);
+  const { id } = await params;
+  const organization = await getOrganizationData(id);
 
   return (
     <div className="space-y-6">
       <div>
         <Link 
-          href={`/organizations/${orgId}`} 
+          href={`/organizations/${id}`} 
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />

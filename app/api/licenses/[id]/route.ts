@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 // GET /api/licenses/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -18,11 +18,12 @@ export async function GET(
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const licenseId = BigInt(id);
 
     // Get license with related data
     const license = await prisma.license.findUnique({
-      where: { id },
+      where: { id: licenseId },
       include: {
         organization: true,
         product: true,
@@ -56,11 +57,11 @@ export async function GET(
 // PUT /api/licenses/[id]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -77,7 +78,8 @@ export async function PUT(
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const licenseId = BigInt(id);
     const body = await request.json();
     const { 
       allowed_domains,
@@ -88,7 +90,7 @@ export async function PUT(
 
     // Check if license exists
     const existingLicense = await prisma.license.findUnique({
-      where: { id },
+      where: { id: licenseId },
     });
 
     if (!existingLicense) {
@@ -114,7 +116,7 @@ export async function PUT(
 
     // Update license
     const license = await prisma.license.update({
-      where: { id },
+      where: { id: licenseId },
       data: updateData,
       include: {
         organization: true,
@@ -142,11 +144,11 @@ export async function PUT(
 // DELETE /api/licenses/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -163,11 +165,12 @@ export async function DELETE(
       );
     }
 
-    const id = BigInt((await params).id);
+    const { id } = await params;
+    const licenseId = BigInt(id);
 
     // Check if license exists
     const existingLicense = await prisma.license.findUnique({
-      where: { id },
+      where: { id: licenseId },
       include: { license_activations: true },
     });
 
@@ -181,13 +184,13 @@ export async function DELETE(
     // Delete all license activations first
     if (existingLicense.license_activations.length > 0) {
       await prisma.licenseActivation.deleteMany({
-        where: { license_id: id },
+        where: { license_id: licenseId },
       });
     }
 
     // Delete license
     await prisma.license.delete({
-      where: { id },
+      where: { id: licenseId },
     });
 
     return NextResponse.json({

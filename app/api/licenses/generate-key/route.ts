@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { generateLicenseKey } from '@/lib/db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/lib/auth';
 
 export async function GET() {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

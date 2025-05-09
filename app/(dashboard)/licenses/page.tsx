@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { Key, Plus } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"

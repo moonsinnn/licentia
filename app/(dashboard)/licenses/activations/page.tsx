@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { getFromApi } from "@/lib/api-utils"
 
+export const dynamic = 'force-dynamic'
+
 interface LicenseActivation {
   id: string | number;
   license_id: string | number;

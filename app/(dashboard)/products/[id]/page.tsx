@@ -1,11 +1,13 @@
+export const dynamic = 'force-dynamic'
+
 import Link from "next/link"
 import { ChevronLeft, Package, AlignJustify, Calendar, Key } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 
 interface ProductViewPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface Product {
@@ -56,12 +58,12 @@ async function getProductLicenses(id: string) {
 }
 
 export default async function ProductViewPage({ params }: ProductViewPageProps) {
-  const productId = (await params).id;
+  const { id } = await params;
   
   // Fetch data in parallel
   const [product, licenses] = await Promise.all([
-    getProductData(productId),
-    getProductLicenses(productId)
+    getProductData(id),
+    getProductLicenses(id)
   ]);
 
   return (
@@ -78,13 +80,13 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
           <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
           <div className="flex items-center gap-2">
             <Link
-              href={`/products/${productId}/edit`}
+              href={`/products/${id}/edit`}
               className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
             >
               Edit Product
             </Link>
             <Link
-              href={`/licenses/new?product=${productId}`}
+              href={`/licenses/new?product=${id}`}
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
             >
               Issue License
@@ -131,7 +133,7 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
               Licenses
             </h2>
             <Link
-              href={`/licenses/new?product=${productId}`}
+              href={`/licenses/new?product=${id}`}
               className="text-sm text-primary hover:underline"
             >
               Issue new license
@@ -175,7 +177,7 @@ export default async function ProductViewPage({ params }: ProductViewPageProps) 
             <div className="text-center py-6 text-muted-foreground">
               <p>No licenses issued for this product</p>
               <Link
-                href={`/licenses/new?product=${productId}`}
+                href={`/licenses/new?product=${id}`}
                 className="mt-2 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
               >
                 Issue first license

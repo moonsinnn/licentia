@@ -1,6 +1,8 @@
 import { BarChart, Clock, Activity } from "lucide-react"
 import { getFromApi } from "@/lib/api-utils"
 
+export const dynamic = 'force-dynamic'
+
 interface AnalyticsData {
   overview: {
     totalLicenses: number;
