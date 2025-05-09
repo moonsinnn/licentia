@@ -1,143 +1,199 @@
 <div align="center">
 
-# 🔐 LICENTIA
+# LICENTIA
 
-**Modern License Management Solution**
+  <p><strong>Enterprise-Grade License Management Platform</strong></p>
 
-
+  <div>
+      <img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js 15" />
+      <img src="https://img.shields.io/badge/Bun-Latest-F9F1E1?style=flat-square&logo=bun" alt="Bun" />
+      <img src="https://img.shields.io/badge/Tailwind-4-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS" />
+      <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="MIT License" />
+  </div>
 </div>
 
-## 🌟 Overview
+## Overview
 
-Licentia is a powerful license management platform designed for modern software businesses. Generate, track, and manage software licenses with an intuitive dashboard and robust API.
+**Licentia** is a sophisticated license management solution engineered for modern software businesses. With its intuitive dashboard and robust API, Licentia streamlines the entire licensing lifecycle from generation to validation, enabling businesses to focus on growth rather than license administration.
 
-### ✨ Key Features
+## Key Features
 
-- 🏢 **Organization Management** - Create and manage multiple organizations
-- 🛠️ **Product Configuration** - Set up products with customizable licensing options
-- 🔑 **License Generation** - Create and distribute license keys securely
-- 📊 **Activation Tracking** - Monitor license usage and activations
-- 👥 **Role-Based Access** - Granular permissions for admins and super admins
+<table>
+  <tr>
+    <td width="33%">
+      <h3>🏢 Organization Management</h3>
+      <p>Create, manage, and organize multiple client organizations with customizable hierarchies.</p>
+    </td>
+    <td width="33%">
+      <h3>🛠️ Product Configuration</h3>
+      <p>Define products with flexible licensing parameters, feature flags, and usage limits.</p>
+    </td>
+    <td width="33%">
+      <h3>🔑 License Generation</h3>
+      <p>Generate and distribute secure, tamper-proof license keys with customizable formats.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <h3>📊 Activation Tracking</h3>
+      <p>Monitor license usage, activations, and domain validations in real-time.</p>
+    </td>
+    <td width="33%">
+      <h3>👥 Role-Based Access</h3>
+      <p>Implement granular permissions with customizable roles for administrators.</p>
+    </td>
+    <td width="33%">
+      <h3>🔒 Domain Validation</h3>
+      <p>Secure domain-based license validation with automatic verification.</p>
+    </td>
+  </tr>
+</table>
 
-## 🚀 Getting Started
+## Getting Started
 
-### Requirements
+### System Requirements
 
-- Node.js 18+ or Bun (recommended)
+- **Runtime**: Node.js 18+ or Bun (recommended)
+- **Database**: MySQL 8.0+
 
-### Installation
+### Quick Installation
 
-1. Clone the repository:
+<details>
+<summary><b>Step 1:</b> Clone the repository</summary>
+
 ```bash
 git clone https://github.com/Yimikami/licentia.git
 cd licentia
 ```
 
-2. Install dependencies:
+</details>
+
+<details>
+<summary><b>Step 2:</b> Install dependencies</summary>
+
 ```bash
 bun install
 ```
 
-3. Set up environment variables:
+</details>
+
+<details>
+<summary><b>Step 3:</b> Configure environment</summary>
+
 ```bash
 cp .env.example .env.local
 ```
 
-4. Configure your MySQL connection in `.env.local`
+Edit `.env.local` with your database credentials and other required settings.
 
-5. Run database migrations:
+</details>
+
+<details>
+<summary><b>Step 4:</b> Set up database</summary>
+
 ```bash
 bunx prisma migrate dev
-```
-
-6. Generate Prisma client:
-```bash
 bunx prisma generate
+bun run db:seed
 ```
 
-7. Seed the database:
-```bash
-bunx prisma db seed
-```
+</details>
 
-8. Start the development server:
+<details>
+<summary><b>Step 5:</b> Launch development server</summary>
+
 ```bash
 bun run dev
 ```
 
-7. Open [http://localhost:3000](http://localhost:3000) in your browser
+Navigate to [http://localhost:3000](http://localhost:3000) in your browser
 
-## 📚 Documentation
+</details>
 
-### API Endpoints
+## API Documentation (WIP)
 
-| Endpoint | Description |
-|----------|-------------|
-| `/api/licenses/validate` | Validate a license key |
+### Core Endpoints
 
-### License Validation API
+| Method | Endpoint                 | Description                       | Authentication |
+| ------ | ------------------------ | --------------------------------- | -------------- |
+| POST   | `/api/licenses/validate` | Validate a license key for domain | Public         |
 
-**Endpoint**: `POST /api/licenses/validate`
+### License Validation
 
-Validates if a license key is valid for a specific domain.
+```http
+POST /api/licenses/validate
+Content-Type: application/json
 
-**Request Body**:
-```json
 {
   "license_key": "XXXX-XXXX-XXXX-XXXX",
   "domain": "example.com"
 }
 ```
 
-**Success Response**:
-```json
-{
+#### Responses
+
+<table>
+  <tr>
+    <th>Status</th>
+    <th>Response</th>
+  </tr>
+  <tr>
+    <td>Valid License</td>
+    <td>
+      <pre><code>{
   "success": true,
   "valid": true,
   "message": "License is valid for this domain"
-}
-```
-
-**Invalid License Response**:
-```json
-{
+}</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td>Invalid License</td>
+    <td>
+      <pre><code>{
   "success": true,
   "valid": false,
   "message": "License is invalid or not authorized for this domain"
-}
-```
+}</code></pre>
+    </td>
+  </tr>
+</table>
 
-### Client Integration Examples
+### Client Integration
 
-#### JavaScript
+<details>
+<summary><b>JavaScript</b></summary>
+
 ```javascript
-// Validate a license key
 async function validateLicense(licenseKey, domain) {
   try {
-    const response = await fetch('https://yourdomain.com/api/licenses/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        license_key: licenseKey,
-        domain: domain,
-      }),
-    });
-    
-    const data = await response.json();
-    return data;
+    const response = await fetch(
+      "https://yourdomain.com/api/licenses/validate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          license_key: licenseKey,
+          domain: domain,
+        }),
+      }
+    );
+
+    return await response.json();
   } catch (error) {
-    console.error('Error validating license:', error);
-    return { success: false, message: 'Error validating license' };
+    console.error("Error validating license:", error);
+    return { success: false, message: "Error validating license" };
   }
 }
 ```
 
-#### PHP
+</details>
+
+<details>
+<summary><b>PHP</b></summary>
+
 ```php
 <?php
-// Validate a license key
 function validateLicense($licenseKey, $domain) {
   $url = 'https://yourdomain.com/api/licenses/validate';
   $data = [
@@ -155,29 +211,51 @@ function validateLicense($licenseKey, $domain) {
 
   $context = stream_context_create($options);
   $result = file_get_contents($url, false, $context);
-  
+
   if ($result === FALSE) {
     return ['success' => false, 'message' => 'Error validating license'];
   }
-  
+
   return json_decode($result, true);
 }
 ?>
 ```
 
-Visit our [API documentation](/api-docs)(TODO) for more detailed usage examples.
+</details>
 
-## 🔧 Tech Stack
+For comprehensive documentation, visit our [API Reference](#)(TBD).
 
-- **Frontend**: Next.js with App Router
-- **UI**: Tailwind CSS + shadcn/ui
-- **Database**: MySQL with Prisma ORM
-- **Authentication**: NextAuth.js
+## Technology Stack
 
-## 🤝 Contributing
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><strong>Next.js 15</strong></td>
+      <td align="center"><strong>Tailwind CSS 4</strong></td>
+      <td align="center"><strong>shadcn/ui</strong></td>
+    </tr>
+    <tr>
+      <td align="center"><strong>MySQL</strong></td>
+      <td align="center"><strong>Prisma ORM</strong></td>
+      <td align="center"><strong>NextAuth.js</strong></td>
+    </tr>
+  </table>
+</div>
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Contributing
 
-## 📄 License
+We welcome contributions from the community! To contribute:
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code follows our coding standards and includes appropriate tests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
