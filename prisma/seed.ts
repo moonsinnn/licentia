@@ -27,7 +27,7 @@ async function main() {
         password: hashedPassword,
       },
       create: {
-        email: 'admin@licentia.com',
+        email: 'super@licentia.com',
         name: 'Super Admin',
         role: 'super_admin',
         password: hashedPassword,

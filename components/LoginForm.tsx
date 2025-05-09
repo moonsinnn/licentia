@@ -92,7 +92,7 @@ export default function LoginForm() {
       <div className="mt-4 text-center text-xs text-muted-foreground">
         <p>
           Default super admin login:<br />
-          Email: admin@licentia.com<br />
+          Email: super@licentia.com<br />
           Password: Admin@123!
         </p>
       </div>
