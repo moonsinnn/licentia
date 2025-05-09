@@ -1,14 +1,14 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { NextAuthProvider } from '@/components/NextAuthProvider';
-import { Toaster } from '@/components/ui/sonner';
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { NextAuthProvider } from "@/components/NextAuthProvider";
+import { Toaster } from "@/components/ui/sonner";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Licentia',
-  description: 'License management platform',
+  title: "Licenium",
+  description: "License management platform",
 };
 
 export default function RootLayout({

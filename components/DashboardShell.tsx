@@ -97,7 +97,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               href="/dashboard"
               className="flex items-center gap-2 font-bold"
             >
-              <span className="text-primary">Licentia</span>
+              <span className="text-primary">Licenium</span>
             </Link>
           </div>
 

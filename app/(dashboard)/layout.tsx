@@ -1,7 +1,7 @@
 import { DashboardShell } from "@/components/DashboardShell";
 
 export const metadata = {
-  title: "Dashboard - Licentia",
+  title: "Dashboard - Licenium",
   description: "License management dashboard",
 };
 

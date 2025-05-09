@@ -1,6 +1,6 @@
 <div align="center">
 
-# LICENTIA
+# LICENIUM
 
   <p><strong>Enterprise-Grade License Management Platform</strong></p>
 
@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Licentia** is a sophisticated license management solution engineered for modern software businesses. With its intuitive dashboard and robust API, Licentia streamlines the entire licensing lifecycle from generation to validation, enabling businesses to focus on growth rather than license administration.
+**Licenium** is a sophisticated license management solution engineered for modern software businesses. With its intuitive dashboard and robust API, Licenium streamlines the entire licensing lifecycle from generation to validation, enabling businesses to focus on growth rather than license administration.
 
 ## Key Features
 
@@ -62,8 +62,8 @@
 <summary><b>Step 1:</b> Clone the repository</summary>
 
 ```bash
-git clone https://github.com/Yimikami/licentia.git
-cd licentia
+git clone https://github.com/Yimikami/licenium.git
+cd licenium
 ```
 
 </details>

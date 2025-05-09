@@ -1,39 +1,39 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         redirect: false,
         email,
         password,
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        setError("Invalid email or password");
         setIsLoading(false);
         return;
       }
 
-      router.push('/dashboard');
+      router.push("/dashboard");
       router.refresh();
     } catch (error) {
-      setError('An error occurred. Please try again.');
-      console.error('Login error:', error);
+      setError("An error occurred. Please try again.");
+      console.error("Login error:", error);
       setIsLoading(false);
     }
   };
@@ -86,21 +86,25 @@ export default function LoginForm() {
           disabled={isLoading}
           className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:bg-primary/60 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Signing in...' : 'Sign in'}
+          {isLoading ? "Signing in..." : "Sign in"}
         </button>
       </div>
       <div className="mt-4 text-center text-xs text-muted-foreground">
         <p>
-          Default super admin login:<br />
-          Email: super@licentia.com<br />
+          Default super admin login:
+          <br />
+          Email: super@licenium.com
+          <br />
           Password: Super@123!
         </p>
         <p>
-          Default admin login:<br />
-          Email: admin@licentia.com<br />
+          Default admin login:
+          <br />
+          Email: admin@licenium.com
+          <br />
           Password: Admin@123!
         </p>
       </div>
     </form>
   );
-} 
+}

@@ -1,6 +1,6 @@
-import { Code, FileJson } from "lucide-react"
+import { Code, FileJson } from "lucide-react";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default function ApiDocsPage() {
   return (
@@ -8,15 +8,15 @@ export default function ApiDocsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">API Documentation</h1>
         <p className="text-muted-foreground">
-          Integration guide for Licentia license management
+          Integration guide for Licenium license management
         </p>
       </div>
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold tracking-tight">Getting Started</h2>
         <p>
-          Licentia provides simple REST APIs for license validation and activation. 
-          The validation endpoint is public.
+          Licenium provides simple REST APIs for license validation and
+          activation. The validation endpoint is public.
         </p>
       </div>
 
@@ -37,8 +37,12 @@ export default function ApiDocsPage() {
             <div>
               <h4 className="text-sm font-semibold">Endpoint</h4>
               <div className="mt-1 flex items-center gap-2">
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-mono">POST</span>
-                <code className="bg-slate-100 px-2 py-1 rounded text-sm font-mono">/api/licenses/validate</code>
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-mono">
+                  POST
+                </span>
+                <code className="bg-slate-100 px-2 py-1 rounded text-sm font-mono">
+                  /api/licenses/validate
+                </code>
               </div>
             </div>
             <div>
@@ -73,8 +77,6 @@ export default function ApiDocsPage() {
           </div>
         </div>
       </div>
-
-   
 
       <div className="space-y-4 mt-8">
         <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -151,5 +153,5 @@ function validateLicense($licenseKey, $domain) {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

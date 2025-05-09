@@ -1,21 +1,19 @@
-import { PrismaClient } from '../lib/generated/prisma';
-import * as bcrypt from 'bcrypt';
+import { PrismaClient } from "../lib/generated/prisma";
+import * as bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
 // Helper to generate a license key
 function generateLicenseKeySync(): string {
-  const segments = Array.from({ length: 4 }, () => 
+  const segments = Array.from({ length: 4 }, () =>
     Math.random().toString(36).substring(2, 6).toUpperCase()
   );
-  return segments.join('-');
+  return segments.join("-");
 }
-
-
 
 async function main() {
   try {
-    console.log('Seeding database...');
+    console.log("Seeding database...");
 
     // Hash the password
     const superPassword = "Super@123!";
@@ -25,28 +23,30 @@ async function main() {
 
     // Create a super admin user
     const superAdminUser = await prisma.user.upsert({
-      where: { email: 'super@licentia.com' },
+      where: { email: "super@licenium.com" },
       update: {
         password: hashedSuperPassword,
       },
       create: {
-        email: 'super@licentia.com',
-        name: 'Super Admin',
-        role: 'super_admin',
+        email: "super@licenium.com",
+        name: "Super Admin",
+        role: "super_admin",
         password: hashedSuperPassword,
       },
     });
-    console.log(`Created super admin: ${superAdminUser.name}, password: ${superPassword}`);
+    console.log(
+      `Created super admin: ${superAdminUser.name}, password: ${superPassword}`
+    );
 
     const adminUser = await prisma.user.upsert({
-      where: { email: 'admin@licentia.com' },
+      where: { email: "admin@licenium.com" },
       update: {
         password: hashedAdminPassword,
       },
       create: {
-        email: 'admin@licentia.com',
-        name: 'Admin',
-        role: 'admin',
+        email: "admin@licenium.com",
+        name: "Admin",
+        role: "admin",
         password: hashedAdminPassword,
       },
     });
@@ -57,9 +57,9 @@ async function main() {
       where: { id: BigInt(1) },
       update: {},
       create: {
-        name: 'Acme Corporation',
-        contact_email: 'contact@acme.com',
-        contact_name: 'John Doe',
+        name: "Acme Corporation",
+        contact_email: "contact@acme.com",
+        contact_name: "John Doe",
       },
     });
     console.log(`Created organization: ${organization.name}`);
@@ -69,8 +69,8 @@ async function main() {
       where: { id: BigInt(1) },
       update: {},
       create: {
-        name: 'Premium Software',
-        description: 'Enterprise-grade software solution',
+        name: "Premium Software",
+        description: "Enterprise-grade software solution",
       },
     });
     console.log(`Created product: ${product.name}`);
@@ -94,17 +94,16 @@ async function main() {
     });
     console.log(`Created license: ${license.license_key}`);
 
-    console.log('Seeding completed successfully!');
+    console.log("Seeding completed successfully!");
   } catch (error) {
-    console.error('Error seeding database:', error);
+    console.error("Error seeding database:", error);
     throw error;
   } finally {
     await prisma.$disconnect();
   }
 }
 
-main()
-  .catch((error) => {
-    console.error('Error in seed script:', error);
-    process.exit(1);
-  }); 
+main().catch((error) => {
+  console.error("Error in seed script:", error);
+  process.exit(1);
+});
