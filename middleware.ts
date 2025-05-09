@@ -69,6 +69,7 @@ export const config = {
     '/analytics/:path*',
     '/api-docs/:path*',
     '/settings/:path*',
+    '/users/:path*',
     '/api/:path*',
   ],
 }; 

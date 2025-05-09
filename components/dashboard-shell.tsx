@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useState } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import Link from "next/link"
 import { SidebarNav, NavItem } from "@/components/ui/sidebar-nav"
 import { 
@@ -13,54 +13,76 @@ import {
   LogOut,
   Menu,
   X,
-  FileJson
+  FileJson,
+  Users
 } from "lucide-react"
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 
-const sidebarItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Organizations",
-    href: "/organizations",
-    icon: Building2,
-  },
-  {
-    title: "Products",
-    href: "/products",
-    icon: Package,
-  },
-  {
-    title: "Licenses",
-    href: "/licenses",
-    icon: Key,
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: BarChart4,
-  },
-  {
-    title: "API Docs",
-    href: "/api-docs",
-    icon: FileJson,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
-]
+// Function to get sidebar items based on user role
+const getSidebarItems = (role?: string): NavItem[] => {
+  const baseItems: NavItem[] = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Organizations",
+      href: "/organizations",
+      icon: Building2,
+    },
+    {
+      title: "Products",
+      href: "/products",
+      icon: Package,
+    },
+    {
+      title: "Licenses",
+      href: "/licenses",
+      icon: Key,
+    },
+    {
+      title: "Analytics",
+      href: "/analytics",
+      icon: BarChart4,
+    },
+    {
+      title: "API Docs",
+      href: "/api-docs",
+      icon: FileJson,
+    },
+    {
+      title: "Settings",
+      href: "/settings",
+      icon: Settings,
+    },
+  ]
+  
+  // Add Users management link for super_admin users
+  if (role === 'super_admin') {
+    baseItems.splice(6, 0, {
+      title: "Users",
+      href: "/users",
+      icon: Users,
+    })
+  }
+  
+  return baseItems
+}
 
 interface DashboardShellProps {
   children: ReactNode
 }
 
 export function DashboardShell({ children }: DashboardShellProps) {
+  const { data: session } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [sidebarItems, setSidebarItems] = useState<NavItem[]>([])
+
+  // Update sidebar items when session changes
+  useEffect(() => {
+    setSidebarItems(getSidebarItems(session?.user?.role))
+  }, [session])
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)

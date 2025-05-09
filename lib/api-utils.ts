@@ -48,56 +48,6 @@ export async function getFromApi<T>(endpoint: string): Promise<T> {
 }
 
 /**
- * Post data to an API endpoint with authentication
- */
-export async function postToApi<T, D = Record<string, unknown>>(endpoint: string, data: D): Promise<T> {
-  const response = await fetchWithAuth(endpoint, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || `API error: ${response.status}`);
-  }
-  
-  return response.json();
-}
-
-/**
- * Put data to an API endpoint with authentication
- */
-export async function putToApi<T, D = Record<string, unknown>>(endpoint: string, data: D): Promise<T> {
-  const response = await fetchWithAuth(endpoint, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || `API error: ${response.status}`);
-  }
-  
-  return response.json();
-}
-
-/**
- * Delete data from an API endpoint with authentication
- */
-export async function deleteFromApi<T>(endpoint: string): Promise<T> {
-  const response = await fetchWithAuth(endpoint, {
-    method: 'DELETE',
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || `API error: ${response.status}`);
-  }
-  
-  return response.json();
-}
-
-/**
  * Check if the current user has the required role
  * Returns true if authorized, false if not
  */

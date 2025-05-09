@@ -17,9 +17,6 @@ export default function ApiDocsPage() {
         <p>
           Licentia provides simple REST APIs for license validation and activation. 
           The validation endpoint is public.
-          <br />  
-          <br />
-          TBD
         </p>
       </div>
 
