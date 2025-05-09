@@ -66,10 +66,10 @@ export async function PUT(
     }
 
     // Check role using the check-role endpoint
-    const isAuthorized = await checkRole('admin');
+    const isAuthorized = await checkRole('super_admin');
     if (!isAuthorized) {
       return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
+        { success: false, error: 'Forbidden: requires super admin privileges' },
         { status: 403 }
       );
     }

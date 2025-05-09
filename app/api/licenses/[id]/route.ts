@@ -70,14 +70,6 @@ export async function PUT(
       );
     }
 
-    // Check role using the check-role endpoint
-    const isAuthorized = await checkRole('admin');
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
 
     const { id } = await params;
     const licenseId = BigInt(id);
@@ -154,15 +146,6 @@ export async function DELETE(
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Check role using the check-role endpoint
-    const isAuthorized = await checkRole('admin');
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
       );
     }
 

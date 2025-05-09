@@ -65,6 +65,14 @@ export async function PUT(
       );
     }
 
+    const isAuthorized = await checkRole('super_admin');
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden: requires super admin privileges' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const orgId = BigInt(id);
     const body = await request.json();

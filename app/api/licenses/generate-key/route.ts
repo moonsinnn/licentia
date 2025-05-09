@@ -15,15 +15,6 @@ export async function GET() {
       );
     }
     
-    // Check role using the check-role endpoint
-    const isAuthorized = await checkRole('admin');
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-    
     // Generate a license key (function now uses JS implementation)
     const licenseKey = await generateLicenseKey();
     
