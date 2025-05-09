@@ -1,7 +1,8 @@
-import Link from "next/link"
-import { getFromApi } from "@/lib/api-utils"
+import Link from "next/link";
+import { getFromApi } from "@/lib/api-utils";
+import DeactivateActivationButton from "@/components/DeactivateActivationButton";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 interface LicenseActivation {
   id: string | number;
@@ -19,10 +20,12 @@ interface LicenseActivation {
 
 async function getLicenseActivations(): Promise<LicenseActivation[]> {
   try {
-    const data = await getFromApi<{ activations: LicenseActivation[] }>('/api/activations/list');
+    const data = await getFromApi<{ activations: LicenseActivation[] }>(
+      "/api/activations/active-list"
+    );
     return data.activations || [];
   } catch (error) {
-    console.error('Error fetching license activations:', error);
+    console.error("Error fetching license activations:", error);
     return [];
   }
 }
@@ -34,7 +37,9 @@ export default async function LicenseActivationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">License Activations</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            License Activations
+          </h1>
           <p className="text-muted-foreground">
             Track and manage all license activations
           </p>
@@ -55,16 +60,21 @@ export default async function LicenseActivationsPage() {
         <div className="divide-y">
           {activations.length > 0 ? (
             activations.map((activation) => (
-              <div key={String(activation.id)} className="flex items-center justify-between p-4">
+              <div
+                key={String(activation.id)}
+                className="flex items-center justify-between p-4"
+              >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium">{activation.domain}</h3>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      activation.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {activation.is_active ? 'Active' : 'Inactive'}
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        activation.is_active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {activation.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
                   <div className="flex flex-col mt-1">
@@ -75,7 +85,8 @@ export default async function LicenseActivationsPage() {
                       IP: {activation.ip_address}
                     </span>
                     <span className="text-xs text-muted-foreground mt-1">
-                      Activated: {new Date(activation.created_at).toLocaleString()}
+                      Activated:{" "}
+                      {new Date(activation.created_at).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -87,14 +98,10 @@ export default async function LicenseActivationsPage() {
                     View License
                   </Link>
                   {activation.is_active && (
-                    <button
-                      className="inline-flex items-center justify-center rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground shadow transition-colors hover:bg-destructive/90"
-                      onClick={() => {
-                        // Client-side deactivation would go here
-                      }}
-                    >
-                      Deactivate
-                    </button>
+                    <DeactivateActivationButton
+                      licenseKey={activation.license.license_key}
+                      domain={activation.domain}
+                    />
                   )}
                 </div>
               </div>
@@ -107,5 +114,5 @@ export default async function LicenseActivationsPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

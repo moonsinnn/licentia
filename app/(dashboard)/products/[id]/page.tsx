@@ -9,8 +9,8 @@ import {
   Key,
 } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
-import { ProductDeleteButton } from "@/components/product-delete-button";
-import { LicenseDeleteButton } from "@/components/license-delete-button";
+import { ProductDeleteButton } from "@/components/ProductDeleteButton";
+import { LicenseDeleteButton } from "@/components/LicenseDeleteButton";
 
 interface ProductViewPageProps {
   params: Promise<{

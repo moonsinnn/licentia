@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Key, Plus } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
-import { LicenseDeleteButton } from "@/components/license-delete-button";
+import { LicenseDeleteButton } from "@/components/LicenseDeleteButton";
+import ToggleLicenseStatusButtonCompact from "@/components/ToggleLicenseStatusButtonCompact";
 
 interface License {
   id: string | number;
@@ -107,6 +108,11 @@ export default async function LicensesPage() {
                   >
                     View
                   </Link>
+                  <ToggleLicenseStatusButtonCompact
+                    licenseId={license.id}
+                    licenseKey={license.license_key}
+                    isActive={license.is_active}
+                  />
                   <LicenseDeleteButton licenseId={license.id} />
                 </div>
               </div>

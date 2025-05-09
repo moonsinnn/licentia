@@ -1,8 +1,9 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import { Building2, Package, Key, Activity } from "lucide-react"
-import Link from "next/link"
-import { getFromApi } from "@/lib/api-utils"
+import { Building2, Package, Key, Activity } from "lucide-react";
+import Link from "next/link";
+import { getFromApi } from "@/lib/api-utils";
+import LicenseActivityCard from "@/components/charts/LicenseActivityCard";
 
 interface Organization {
   id: string | number;
@@ -18,6 +19,8 @@ interface Activation {
   id: string | number;
   is_active: boolean;
   created_at: string;
+  domain?: string;
+  license_id?: string | number;
 }
 
 interface License {
@@ -34,47 +37,72 @@ interface License {
 async function getCountData() {
   try {
     // Fetch all data in parallel
-    const [
-      orgsData,
-      productsData,
-      licensesData
-    ] = await Promise.all([
-      getFromApi<{ organizations: Organization[] }>('/api/organizations'),
-      getFromApi<{ products: Product[] }>('/api/products'),
-      getFromApi<{ licenses: License[] }>('/api/licenses')
-    ]);
+    const [orgsData, productsData, licensesData, activationsData] =
+      await Promise.all([
+        getFromApi<{ organizations: Organization[] }>("/api/organizations"),
+        getFromApi<{ products: Product[] }>("/api/products"),
+        getFromApi<{ licenses: License[] }>("/api/licenses"),
+        getFromApi<{ activations: Activation[] }>("/api/activations/all"),
+      ]);
 
     const organizations = orgsData.organizations || [];
     const products = productsData.products || [];
     const licenses = licensesData.licenses || [];
+    const allActivations = activationsData.activations || [];
 
     // Count active licenses
-    const activeLicenses = licenses.filter(license => license.is_active);
-    
-    // Count recent activations (in the last 7 days)
-    const recentActivations = licenses.reduce((acc: number, license: License) => {
-      return acc + (license.license_activations?.filter((act: Activation) => {
-        const activationDate = new Date(act.created_at);
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        return activationDate >= sevenDaysAgo && act.is_active;
-      }).length || 0);
-    }, 0);
+    const activeLicenses = licenses.filter((license) => license.is_active);
+
+    // Get recent activations (in the last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const recentActivationsList = allActivations.filter((act: Activation) => {
+      const activationDate = new Date(act.created_at);
+      return activationDate >= sevenDaysAgo;
+    });
+
+    // Count active activations
+    const activeActivations = allActivations.filter(
+      (act: Activation) => act.is_active
+    ).length;
+
+    // Count recent activations (in the last 7 days) - legacy method
+    const recentActivations = licenses.reduce(
+      (acc: number, license: License) => {
+        return (
+          acc +
+          (license.license_activations?.filter((act: Activation) => {
+            const activationDate = new Date(act.created_at);
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            return activationDate >= sevenDaysAgo && act.is_active;
+          }).length || 0)
+        );
+      },
+      0
+    );
 
     return {
       organizationsCount: organizations.length,
       productsCount: products.length,
       activeLicensesCount: activeLicenses.length,
       recentActivationsCount: recentActivations,
+      recentActivations: recentActivationsList,
+      totalActivations: allActivations.length,
+      activeActivations,
       recentLicenses: licenses.slice(0, 5),
     };
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    console.error("Error fetching dashboard data:", error);
     return {
       organizationsCount: 0,
       productsCount: 0,
       activeLicensesCount: 0,
       recentActivationsCount: 0,
+      recentActivations: [],
+      totalActivations: 0,
+      activeActivations: 0,
       recentLicenses: [] as License[],
     };
   }
@@ -87,6 +115,9 @@ export default async function DashboardPage() {
     activeLicensesCount,
     recentActivationsCount,
     recentLicenses,
+    recentActivations,
+    totalActivations,
+    activeActivations,
   } = await getCountData();
 
   return (
@@ -97,7 +128,7 @@ export default async function DashboardPage() {
           Overview of your license management
         </p>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
           title="Organizations"
@@ -135,7 +166,10 @@ export default async function DashboardPage() {
           {recentLicenses.length > 0 ? (
             <div className="space-y-2">
               {recentLicenses.map((license) => (
-                <div key={String(license.id)} className="border-b pb-2 last:border-0">
+                <div
+                  key={String(license.id)}
+                  className="border-b pb-2 last:border-0"
+                >
                   <div className="flex justify-between">
                     <span className="font-medium">{license.license_key}</span>
                     <span className="text-sm text-muted-foreground">
@@ -154,25 +188,23 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-2 text-lg font-medium">License Activity</h2>
-          <div className="text-sm text-muted-foreground">
-            {recentActivationsCount > 0 ? 
-              `${recentActivationsCount} ${recentActivationsCount === 1 ? 'activation' : 'activations'} in the last 7 days` :
-              'No recent activations found'}
-          </div>
-        </div>
+        <LicenseActivityCard
+          recentActivations={recentActivations}
+          totalActivations={totalActivations}
+          activeActivations={activeActivations}
+          timeRange="7days"
+        />
       </div>
     </div>
-  )
+  );
 }
 
 interface DashboardCardProps {
-  title: string
-  value: string
-  description: string
-  icon: React.ElementType
-  href: string
+  title: string;
+  value: string;
+  description: string;
+  icon: React.ElementType;
+  href: string;
 }
 
 function DashboardCard({
@@ -198,5 +230,5 @@ function DashboardCard({
         </div>
       </div>
     </Link>
-  )
-} 
+  );
+}

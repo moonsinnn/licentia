@@ -10,8 +10,8 @@ import {
   Key,
 } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
-import { OrganizationDeleteButton } from "@/components/organization-delete-button";
-import { LicenseDeleteButton } from "@/components/license-delete-button";
+import { OrganizationDeleteButton } from "@/components/OrganizationDeleteButton";
+import { LicenseDeleteButton } from "@/components/LicenseDeleteButton";
 
 interface OrganizationViewPageProps {
   params: Promise<{

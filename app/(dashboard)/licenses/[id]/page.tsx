@@ -7,12 +7,13 @@ import {
   Building2,
   Package,
   Clock,
-  Users,
   Globe,
+  Users,
 } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
-import ActivationForm from "@/components/ActivationForm";
-import { LicenseDeleteButton } from "@/components/license-delete-button";
+import { LicenseDeleteButton } from "@/components/LicenseDeleteButton";
+import ToggleDomainActivationButton from "@/components/ToggleDomainActivationButton";
+import ToggleLicenseStatusButton from "@/components/ToggleLicenseStatusButton";
 
 interface LicenseViewPageProps {
   params: Promise<{
@@ -129,15 +130,22 @@ export default async function LicenseViewPage({
                 <Key className="h-5 w-5" />
                 License Key
               </h2>
-              <span
-                className={`inline-flex h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  licenseData.is_active
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {licenseData.is_active ? "Active" : "Inactive"}
-              </span>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`inline-flex h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    licenseData.is_active
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {licenseData.is_active ? "Active" : "Inactive"}
+                </span>
+                <ToggleLicenseStatusButton
+                  licenseId={licenseData.id}
+                  licenseKey={licenseData.license_key}
+                  isActive={licenseData.is_active}
+                />
+              </div>
             </div>
             <div className="font-mono text-lg bg-slate-50 dark:bg-slate-800 p-3 rounded-md mb-4">
               {licenseData.license_key}
@@ -177,14 +185,27 @@ export default async function LicenseViewPage({
             </h2>
             <div className="space-y-2">
               {allowedDomains && allowedDomains.length > 0 ? (
-                allowedDomains.map((domain: string) => (
-                  <div
-                    key={domain}
-                    className="bg-slate-50 dark:bg-slate-800 p-2 rounded-md"
-                  >
-                    {domain}
-                  </div>
-                ))
+                allowedDomains.map((domain: string) => {
+                  // Check if this domain has an active activation
+                  const domainActivation = activations.find(
+                    (act: LicenseActivation) => act.domain === domain
+                  );
+                  const isActive = domainActivation?.is_active || false;
+
+                  return (
+                    <div
+                      key={domain}
+                      className="bg-slate-50 dark:bg-slate-800 p-3 rounded-md flex justify-between items-center"
+                    >
+                      <span className="font-medium">{domain}</span>
+                      <ToggleDomainActivationButton
+                        licenseKey={licenseData.license_key}
+                        domain={domain}
+                        isActive={isActive}
+                      />
+                    </div>
+                  );
+                })
               ) : (
                 <p className="text-sm text-muted-foreground">
                   No domain restrictions
@@ -192,9 +213,6 @@ export default async function LicenseViewPage({
               )}
             </div>
           </div>
-
-          {/* Add activation form */}
-          <ActivationForm licenseKey={licenseData.license_key} />
         </div>
 
         <div className="space-y-6">

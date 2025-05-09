@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Building2, Plus } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
-import { OrganizationDeleteButton } from "@/components/organization-delete-button";
+import { OrganizationDeleteButton } from "@/components/OrganizationDeleteButton";
 
 interface Organization {
   id: string | number;

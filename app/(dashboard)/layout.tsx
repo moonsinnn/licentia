@@ -1,14 +1,14 @@
-import { DashboardShell } from "@/components/dashboard-shell"
+import { DashboardShell } from "@/components/DashboardShell";
 
 export const metadata = {
   title: "Dashboard - Licentia",
   description: "License management dashboard",
-}
+};
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  return <DashboardShell>{children}</DashboardShell>
-} 
+  return <DashboardShell>{children}</DashboardShell>;
+}

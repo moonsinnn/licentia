@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, serializeData } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '@/lib/auth';
-import { checkRole } from '@/lib/api-utils';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma, serializeData } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { nextAuthOptions } from "@/lib/auth";
 
 // GET /api/licenses/[id]
 export async function GET(
@@ -14,7 +13,7 @@ export async function GET(
     const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -34,7 +33,7 @@ export async function GET(
 
     if (!license) {
       return NextResponse.json(
-        { success: false, error: 'License not found' },
+        { success: false, error: "License not found" },
         { status: 404 }
       );
     }
@@ -47,9 +46,9 @@ export async function GET(
       license: serializedLicense,
     });
   } catch (error) {
-    console.error('Error fetching license:', error);
+    console.error("Error fetching license:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch license' },
+      { success: false, error: "Failed to fetch license" },
       { status: 500 }
     );
   }
@@ -65,21 +64,15 @@ export async function PUT(
     const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-
     const { id } = await params;
     const licenseId = BigInt(id);
     const body = await request.json();
-    const { 
-      allowed_domains,
-      max_activations,
-      is_active,
-      expires_at
-    } = body;
+    const { allowed_domains, max_activations, is_active, expires_at } = body;
 
     // Check if license exists
     const existingLicense = await prisma.license.findUnique({
@@ -88,7 +81,7 @@ export async function PUT(
 
     if (!existingLicense) {
       return NextResponse.json(
-        { success: false, error: 'License not found' },
+        { success: false, error: "License not found" },
         { status: 404 }
       );
     }
@@ -100,12 +93,15 @@ export async function PUT(
       is_active?: boolean;
       expires_at?: Date | null;
     }
-    
+
     const updateData: UpdateData = {};
-    if (allowed_domains !== undefined) updateData.allowed_domains = allowed_domains;
-    if (max_activations !== undefined) updateData.max_activations = Number(max_activations);
+    if (allowed_domains !== undefined)
+      updateData.allowed_domains = allowed_domains;
+    if (max_activations !== undefined)
+      updateData.max_activations = Number(max_activations);
     if (is_active !== undefined) updateData.is_active = !!is_active;
-    if (expires_at !== undefined) updateData.expires_at = expires_at ? new Date(expires_at) : null;
+    if (expires_at !== undefined)
+      updateData.expires_at = expires_at ? new Date(expires_at) : null;
 
     // Update license
     const license = await prisma.license.update({
@@ -126,9 +122,9 @@ export async function PUT(
       license: serializedLicense,
     });
   } catch (error) {
-    console.error('Error updating license:', error);
+    console.error("Error updating license:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update license' },
+      { success: false, error: "Failed to update license" },
       { status: 500 }
     );
   }
@@ -144,7 +140,7 @@ export async function DELETE(
     const session = await getServerSession(nextAuthOptions);
     if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -160,7 +156,7 @@ export async function DELETE(
 
     if (!existingLicense) {
       return NextResponse.json(
-        { success: false, error: 'License not found' },
+        { success: false, error: "License not found" },
         { status: 404 }
       );
     }
@@ -179,13 +175,13 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'License deleted successfully',
+      message: "License deleted successfully",
     });
   } catch (error) {
-    console.error('Error deleting license:', error);
+    console.error("Error deleting license:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete license' },
+      { success: false, error: "Failed to delete license" },
       { status: 500 }
     );
   }
-} 
+}

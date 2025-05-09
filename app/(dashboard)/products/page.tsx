@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Package, Plus } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
-import { ProductDeleteButton } from "@/components/product-delete-button";
+import { ProductDeleteButton } from "@/components/ProductDeleteButton";
 
 interface Product {
   id: string | number;
