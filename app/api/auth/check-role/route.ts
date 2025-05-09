@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
           name: session.user?.name,
           email: session.user?.email,
           role: session.user?.role,
-          image: session.user?.image,
         },
         authorized: true,
       });
@@ -45,7 +44,6 @@ export async function GET(request: NextRequest) {
         name: session.user?.name,
         email: session.user?.email,
         role: session.user?.role,
-        image: session.user?.image,
       },
       authorized: isAuthorized,
     });

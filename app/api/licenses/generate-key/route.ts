@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { generateLicenseKey } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { nextAuthOptions } from '@/lib/auth';
+import { checkRole } from '@/lib/api-utils';
 
 export async function GET() {
   try {
@@ -14,9 +15,9 @@ export async function GET() {
       );
     }
     
-    // Check role - only admins can generate keys
-    const userRole = session.user.role;
-    if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
+    // Check role using the check-role endpoint
+    const isAuthorized = await checkRole('admin');
+    if (!isAuthorized) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }

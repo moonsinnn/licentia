@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { nextAuthOptions } from '@/lib/auth';
+import { checkRole } from '@/lib/api-utils';
 
 // GET /api/products/[id]
 export async function GET(
@@ -64,9 +65,9 @@ export async function PUT(
       );
     }
 
-    // Check role - only admins can update products
-    const userRole = session.user.role;
-    if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
+    // Check role using the check-role endpoint
+    const isAuthorized = await checkRole('admin');
+    if (!isAuthorized) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
@@ -148,9 +149,9 @@ export async function DELETE(
       );
     }
 
-    // Check role - only admins can delete products
-    const userRole = session.user.role;
-    if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
+    // Check role using the check-role endpoint
+    const isAuthorized = await checkRole('admin');
+    if (!isAuthorized) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }

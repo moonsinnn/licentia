@@ -95,4 +95,28 @@ export async function deleteFromApi<T>(endpoint: string): Promise<T> {
   }
   
   return response.json();
+}
+
+/**
+ * Check if the current user has the required role
+ * Returns true if authorized, false if not
+ */
+export async function checkRole(requiredRole?: string): Promise<boolean> {
+  try {
+    const endpoint = requiredRole 
+      ? `/api/auth/check-role?role=${requiredRole}`
+      : '/api/auth/check-role';
+    
+    const response = await fetchWithAuth(endpoint);
+    
+    if (!response.ok) {
+      return false;
+    }
+    
+    const data = await response.json();
+    return data.success && data.authorized;
+  } catch (error) {
+    console.error('Error checking role:', error);
+    return false;
+  }
 } 

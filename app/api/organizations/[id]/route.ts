@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, serializeData } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { nextAuthOptions } from '@/lib/auth';
+import { checkRole } from '@/lib/api-utils';
 
 // GET /api/organizations/[id]
 export async function GET(
@@ -141,8 +142,9 @@ export async function DELETE(
       );
     }
 
-    // Only super_admin can delete organizations
-    if (session.user?.role !== 'super_admin') {
+    // Check role using the check-role endpoint
+    const isAuthorized = await checkRole('super_admin');
+    if (!isAuthorized) {
       return NextResponse.json(
         { success: false, error: 'Forbidden: requires super admin privileges' },
         { status: 403 }
