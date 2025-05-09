@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { checkRole, getFromApi } from "@/lib/api-utils";
 import { notFound } from "next/navigation";
 

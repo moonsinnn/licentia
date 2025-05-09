@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       license_id?: bigint;
     };
 
-    let whereClause: WhereClause = { is_active: true };
+    const whereClause: WhereClause = { is_active: true };
 
     if (licenseId) {
       whereClause.license_id = BigInt(licenseId);

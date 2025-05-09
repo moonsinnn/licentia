@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -53,11 +54,18 @@ export default function ToggleDomainActivationButton({
         throw new Error(error.error || `Failed to ${action} domain`);
       }
 
+      // Show success toast
+      toast.success(
+        isActive
+          ? `Domain ${domain} has been deactivated successfully`
+          : `Domain ${domain} has been activated successfully`
+      );
+
       // Refresh the page to show updated data
       router.refresh();
     } catch (error) {
       console.error(`Error ${action}ing domain:`, error);
-      alert(`Failed to ${action} domain. Please try again.`);
+      toast.error(`Failed to ${action} domain. Please try again.`);
     } finally {
       setIsLoading(false);
       setIsOpen(false);

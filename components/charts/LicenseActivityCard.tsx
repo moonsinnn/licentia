@@ -10,8 +10,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
 import {
   Card,
@@ -29,6 +27,7 @@ interface Activation {
   is_active: boolean;
   created_at: string;
   domain?: string;
+  license_id?: string | number;
 }
 
 interface LicenseActivityCardProps {
@@ -44,9 +43,7 @@ export default function LicenseActivityCard({
   activeActivations,
   timeRange = "7days",
 }: LicenseActivityCardProps) {
-  const [selectedTab, setSelectedTab] = useState<"overview" | "recent">(
-    "overview"
-  );
+  const [, setSelectedTab] = useState<"overview" | "recent">("overview");
 
   // Process data for chart
   const chartData = processActivationsForChart(recentActivations);

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -82,11 +83,18 @@ export default function ToggleLicenseStatusButton({
         }
       }
 
+      // Show success toast
+      toast.success(
+        isActive
+          ? `License ${licenseKey} has been deactivated successfully`
+          : `License ${licenseKey} has been activated successfully`
+      );
+
       // Refresh the page to show updated data
       router.refresh();
     } catch (error) {
       console.error(`Error ${action}ing license:`, error);
-      alert(`Failed to ${action} license. Please try again.`);
+      toast.error(`Failed to ${action} license. Please try again.`);
     } finally {
       setIsLoading(false);
       setIsOpen(false);

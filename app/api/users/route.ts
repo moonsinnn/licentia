@@ -1,30 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { hash } from 'bcrypt';
-import { nextAuthOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
-import { checkRole } from '@/lib/api-utils';
-
-// Define response type for better type safety
-type UserResponse = {
-  id: string;
-  email: string;
-  name: string;
-  role: 'admin' | 'super_admin';
-  created_at: Date;
-};
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { hash } from "bcrypt";
+import { nextAuthOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { checkRole } from "@/lib/api-utils";
 
 // GET - Fetch all users
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Authenticate the request
     const session = await getServerSession(nextAuthOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized: Only super admins can access this resource" },
+        { status: 401 }
+      );
+    }
 
     // Check if the user is authenticated and is a super_admin
-    const authCheck = await checkRole('super_admin');
+    const authCheck = await checkRole("super_admin");
     if (!authCheck) {
       return NextResponse.json(
-        { error: 'Unauthorized: Only super admins can access this resource' },
+        { error: "Unauthorized: Only super admins can access this resource" },
         { status: 403 }
       );
     }
@@ -39,12 +36,12 @@ export async function GET(req: NextRequest) {
         created_at: true,
       },
       orderBy: {
-        created_at: 'desc',
+        created_at: "desc",
       },
     });
 
     // Transform BigInt ids to strings for JSON serialization
-    const serializedUsers = users.map(user => ({
+    const serializedUsers = users.map((user) => ({
       ...user,
       id: user.id.toString(),
     }));
@@ -52,9 +49,9 @@ export async function GET(req: NextRequest) {
     // Return the users
     return NextResponse.json(serializedUsers);
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
+      { error: "Failed to fetch users" },
       { status: 500 }
     );
   }
@@ -65,12 +62,18 @@ export async function POST(req: NextRequest) {
   try {
     // Authenticate the request
     const session = await getServerSession(nextAuthOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized: Only super admins can create users" },
+        { status: 401 }
+      );
+    }
 
     // Check if the user is authenticated and is a super_admin
-    const authCheck = await checkRole('super_admin');
+    const authCheck = await checkRole("super_admin");
     if (!authCheck) {
       return NextResponse.json(
-        { error: 'Unauthorized: Only super admins can create users' },
+        { error: "Unauthorized: Only super admins can create users" },
         { status: 403 }
       );
     }
@@ -81,7 +84,7 @@ export async function POST(req: NextRequest) {
     // Validate input
     if (!name || !email || !password) {
       return NextResponse.json(
-        { error: 'Name, email, and password are required' },
+        { error: "Name, email, and password are required" },
         { status: 400 }
       );
     }
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'A user with this email already exists' },
+        { error: "A user with this email already exists" },
         { status: 409 }
       );
     }
@@ -107,7 +110,7 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: 'admin', // Default role for new users
+        role: "admin", // Default role for new users
       },
       select: {
         id: true,
@@ -127,11 +130,9 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating user:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create user';
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    console.error("Error creating user:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create user";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-} 
+}

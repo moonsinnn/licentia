@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -47,11 +48,14 @@ export default function DeactivateActivationButton({
         );
       }
 
+      // Show success toast
+      toast.success(`Domain ${domain} has been deactivated successfully`);
+
       // Refresh the page to show updated data
       router.refresh();
     } catch (error) {
       console.error("Error deactivating license activation:", error);
-      alert("Failed to deactivate license activation. Please try again.");
+      toast.error("Failed to deactivate license activation. Please try again.");
     } finally {
       setIsLoading(false);
       setIsOpen(false);
