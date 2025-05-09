@@ -18,22 +18,39 @@ async function main() {
     console.log('Seeding database...');
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash("Admin@123!", 10);
+    const superPassword = "Super@123!";
+    const adminPassword = "Admin@123!";
+    const hashedSuperPassword = await bcrypt.hash(superPassword, 10);
+    const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
 
     // Create a super admin user
+    const superAdminUser = await prisma.user.upsert({
+      where: { email: 'super@licentia.com' },
+      update: {
+        password: hashedSuperPassword,
+      },
+      create: {
+        email: 'super@licentia.com',
+        name: 'Super Admin',
+        role: 'super_admin',
+        password: hashedSuperPassword,
+      },
+    });
+    console.log(`Created super admin: ${superAdminUser.name}, password: ${superPassword}`);
+
     const adminUser = await prisma.user.upsert({
       where: { email: 'admin@licentia.com' },
       update: {
-        password: hashedPassword,
+        password: hashedAdminPassword,
       },
       create: {
         email: 'admin@licentia.com',
-        name: 'Super Admin',
-        role: 'super_admin',
-        password: hashedPassword,
+        name: 'Admin',
+        role: 'admin',
+        password: hashedAdminPassword,
       },
     });
-    console.log(`Created super admin: ${adminUser.name}, password: Admin@123!`);
+    console.log(`Created admin: ${adminUser.name}, password: ${adminPassword}`);
 
     // Create an organization
     const organization = await prisma.organization.upsert({
