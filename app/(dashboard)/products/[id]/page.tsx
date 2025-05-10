@@ -237,7 +237,7 @@ export default async function ProductViewPage({
                 <Key className="h-12 w-12 text-muted-foreground/50 mb-3" />
                 <h3 className="text-lg font-medium mb-1">No licenses found</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  This product doesn't have any licenses yet.
+                  This product doesn&apos;t have any licenses yet.
                 </p>
                 <Button asChild>
                   <Link href={`/licenses/new?product=${id}`}>
