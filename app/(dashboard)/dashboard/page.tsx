@@ -1,9 +1,18 @@
 export const dynamic = "force-dynamic";
 
-import { Building2, Package, Key, Activity } from "lucide-react";
+import { Building2, Package, Key, Activity, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { getFromApi } from "@/lib/api-utils";
 import LicenseActivityCard from "@/components/charts/LicenseActivityCard";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Organization {
   id: string | number;
@@ -122,11 +131,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6 w-full">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Overview of your license management
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Overview of your license management
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -161,33 +172,60 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-2 text-lg font-medium">Recent Licenses</h2>
-          {recentLicenses.length > 0 ? (
-            <div className="space-y-2">
-              {recentLicenses.map((license) => (
-                <div
-                  key={String(license.id)}
-                  className="border-b pb-2 last:border-0"
-                >
-                  <div className="flex justify-between">
-                    <span className="font-medium">{license.license_key}</span>
-                    <span className="text-sm text-muted-foreground">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Key className="h-5 w-5 text-primary" />
+                <CardTitle>Recent Licenses</CardTitle>
+              </div>
+              <Link href="/licenses">
+                <Button variant="ghost" size="sm" className="gap-1 text-xs">
+                  View All
+                  <ArrowUpRight className="h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+            <CardDescription>Recently created license keys</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentLicenses.length > 0 ? (
+              <div className="space-y-3">
+                {recentLicenses.map((license) => (
+                  <div
+                    key={String(license.id)}
+                    className="flex items-center justify-between border-b pb-3 last:border-0"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {license.license_key}
+                        </span>
+                        <Badge
+                          variant={license.is_active ? "default" : "outline"}
+                          className="text-xs"
+                        >
+                          {license.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {license.product.name} - {license.organization.name}
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
                       {new Date(license.created_at).toLocaleDateString()}
-                    </span>
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {license.product.name} - {license.organization.name}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              No licenses found
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
+                No licenses found
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <LicenseActivityCard
           recentActivations={recentActivations}
           totalActivations={totalActivations}
