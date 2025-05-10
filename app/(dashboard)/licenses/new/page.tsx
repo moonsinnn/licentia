@@ -1,12 +1,23 @@
-"use client"
+"use client";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft, Plus } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface Organization {
   id: string | number;
@@ -19,34 +30,36 @@ interface Product {
 }
 
 export default function NewLicensePage() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [domains, setDomains] = useState<string[]>([])
-  const [domainInput, setDomainInput] = useState("")
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [domains, setDomains] = useState<string[]>([]);
+  const [domainInput, setDomainInput] = useState("");
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
-      setIsLoading(true);
       try {
         // Fetch both APIs in parallel
         const [orgsResponse, productsResponse] = await Promise.all([
-          fetch('/api/organizations'),
-          fetch('/api/products')
+          fetch("/api/organizations"),
+          fetch("/api/products"),
         ]);
-        
+
         // Check if any response failed
         if (!orgsResponse.ok) {
           const errorData = await orgsResponse.json();
-          throw new Error(errorData.error || `Organizations API error: ${orgsResponse.status}`);
+          throw new Error(
+            errorData.error || `Organizations API error: ${orgsResponse.status}`
+          );
         }
-        
+
         if (!productsResponse.ok) {
           const errorData = await productsResponse.json();
-          throw new Error(errorData.error || `Products API error: ${productsResponse.status}`);
+          throw new Error(
+            errorData.error || `Products API error: ${productsResponse.status}`
+          );
         }
 
         // Parse the responses
@@ -57,10 +70,12 @@ export default function NewLicensePage() {
         setOrganizations(orgsData.organizations || []);
         setProducts(productsData.products || []);
       } catch (err) {
-        console.error('Error loading data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load organizations and products');
-      } finally {
-        setIsLoading(false);
+        console.error("Error loading data:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load organizations and products"
+        );
       }
     }
 
@@ -69,13 +84,13 @@ export default function NewLicensePage() {
 
   function addDomain() {
     if (domainInput && !domains.includes(domainInput)) {
-      setDomains([...domains, domainInput])
-      setDomainInput("")
+      setDomains([...domains, domainInput]);
+      setDomainInput("");
     }
   }
 
   function removeDomain(domain: string) {
-    setDomains(domains.filter(d => d !== domain))
+    setDomains(domains.filter((d) => d !== domain));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -89,15 +104,15 @@ export default function NewLicensePage() {
       product_id: formData.get("product_id") as string,
       allowed_domains: domains,
       max_activations: parseInt(formData.get("max_activations") as string, 10),
-      expires_at: formData.get("expires_at") as string || null,
+      expires_at: (formData.get("expires_at") as string) || null,
     };
 
     try {
       // Call the API to create the license
-      const response = await fetch('/api/licenses', {
-        method: 'POST',
+      const response = await fetch("/api/licenses", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -107,40 +122,34 @@ export default function NewLicensePage() {
         const errorData = await response.json();
         throw new Error(errorData.error || `API error: ${response.status}`);
       }
-      
-      
+
       // Redirect to licenses page
       router.push("/licenses");
       router.refresh();
     } catch (error) {
       console.error("Error creating license:", error);
-      setError(error instanceof Error ? error.message : 'Failed to create license');
+      setError(
+        error instanceof Error ? error.message : "Failed to create license"
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
-        <Link 
-          href="/licenses" 
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="px-0 text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Licenses
-        </Link>
+          <Link href="/licenses" className="inline-flex items-center gap-1">
+            <ChevronLeft className="h-4 w-4" />
+            Back to Licenses
+          </Link>
+        </Button>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">New License</h1>
         <p className="text-muted-foreground">
           Generate a new license key for a product
@@ -148,150 +157,125 @@ export default function NewLicensePage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-4 border border-red-200">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="rounded-lg bg-red-50 p-4 border border-red-200 shadow-sm">
+          <p className="text-sm text-red-700 font-medium">{error}</p>
         </div>
       )}
 
-      <div className="rounded-md border p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label
-                htmlFor="organization_id"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Organization
-              </label>
-              <select
-                id="organization_id"
-                name="organization_id"
-                required
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select an organization</option>
-                {organizations.map((org) => (
-                  <option key={String(org.id)} value={org.id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
+      <Card className="shadow-md border rounded-lg overflow-hidden">
+        <CardContent className="pt-6 px-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="organization_id">Organization</Label>
+                <Select name="organization_id" required>
+                  <SelectTrigger id="organization_id" className="w-full">
+                    <SelectValue placeholder="Select an organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((org) => (
+                      <SelectItem key={String(org.id)} value={String(org.id)}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product_id">Product</Label>
+                <Select name="product_id" required>
+                  <SelectTrigger id="product_id" className="w-full">
+                    <SelectValue placeholder="Select a product" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem
+                        key={String(product.id)}
+                        value={String(product.id)}
+                      >
+                        {product.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <label
-                htmlFor="product_id"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Product
-              </label>
-              <select
-                id="product_id"
-                name="product_id"
-                required
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select a product</option>
-                {products.map((product) => (
-                  <option key={String(product.id)} value={product.id}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div>
-            <label
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Allowed Domains
-            </label>
-            <div className="mt-2 flex gap-2">
-              <input
-                type="text"
-                value={domainInput}
-                onChange={(e) => setDomainInput(e.target.value)}
-                placeholder="example.com"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={addDomain}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
-              >
-                Add
-              </button>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {domains.map((domain) => (
-                <div 
-                  key={domain}
-                  className="inline-flex items-center justify-center rounded-md bg-secondary px-3 py-1 text-sm text-secondary-foreground"
-                >
-                  {domain}
-                  <button
-                    type="button"
-                    onClick={() => removeDomain(domain)}
-                    className="ml-2 text-sm text-secondary-foreground hover:text-foreground"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label
-                htmlFor="max_activations"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Max Activations
-              </label>
-              <input
-                id="max_activations"
-                name="max_activations"
-                type="number"
-                required
-                min="1"
-                defaultValue="1"
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
+            <div className="space-y-3">
+              <Label>Allowed Domains</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={domainInput}
+                  onChange={(e) => setDomainInput(e.target.value)}
+                  placeholder="example.com"
+                  className="flex-1"
+                />
+                <Button type="button" onClick={addDomain} className="shrink-0">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {domains.map((domain) => (
+                  <Badge
+                    key={domain}
+                    variant="secondary"
+                    className="px-3 py-1.5 text-sm"
+                  >
+                    {domain}
+                    <button
+                      type="button"
+                      onClick={() => removeDomain(domain)}
+                      className="ml-2 text-sm text-secondary-foreground hover:text-foreground"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div>
-              <label
-                htmlFor="expires_at"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Expiration Date (Optional)
-              </label>
-              <input
-                id="expires_at"
-                name="expires_at"
-                type="date"
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="max_activations">Max Activations</Label>
+                <Input
+                  id="max_activations"
+                  name="max_activations"
+                  type="number"
+                  required
+                  min="1"
+                  defaultValue="1"
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expires_at">Expiration Date (Optional)</Label>
+                <Input
+                  id="expires_at"
+                  name="expires_at"
+                  type="date"
+                  className="w-full"
+                />
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center justify-end gap-4">
-            <Link
-              href="/licenses"
-              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {isSubmitting ? "Creating..." : "Generate License"}
-            </button>
-          </div>
-        </form>
-      </div>
+
+            <div className="flex items-center justify-end gap-4 pt-2">
+              <Button asChild variant="outline" size="lg" className="px-6">
+                <Link href="/licenses">Cancel</Link>
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                size="lg"
+                className="px-6"
+              >
+                {isSubmitting ? "Creating..." : "Generate License"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  )
-} 
+  );
+}

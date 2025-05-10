@@ -1,46 +1,49 @@
-"use client"
+"use client";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function NewOrganizationPage() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
 
-    const formData = new FormData(event.currentTarget)
+    const formData = new FormData(event.currentTarget);
     const data = {
       name: formData.get("name") as string,
       contact_name: formData.get("contact_name") as string,
       contact_email: formData.get("contact_email") as string,
-    }
+    };
 
     try {
       // Call the API to create the organization
-      const response = await fetch('/api/organizations', {
-        method: 'POST',
+      const response = await fetch("/api/organizations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create organization');
+        throw new Error(result.error || "Failed to create organization");
       }
-      
+
       // Redirect to the newly created organization
       if (result.success && result.organization) {
         router.push(`/organizations/${result.organization.id}`);
@@ -51,7 +54,9 @@ export default function NewOrganizationPage() {
       }
     } catch (error) {
       console.error("Error creating organization:", error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -60,92 +65,81 @@ export default function NewOrganizationPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link 
-          href="/organizations" 
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="px-0 text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Organizations
-        </Link>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight">New Organization</h1>
+          <Link
+            href="/organizations"
+            className="inline-flex items-center gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Organizations
+          </Link>
+        </Button>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">
+          New Organization
+        </h1>
         <p className="text-muted-foreground">
           Add a new client organization to your account
         </p>
       </div>
 
-      <div className="rounded-md border p-6">
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="name"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Organization Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                required
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Acme Corporation"
-              />
+      <Card className="shadow-sm">
+        <CardContent className="pt-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
+              {error}
             </div>
-            <div>
-              <label
-                htmlFor="contact_name"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Contact Name
-              </label>
-              <input
-                id="contact_name"
-                name="contact_name"
-                required
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="John Doe"
-              />
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Organization Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  className="mt-2"
+                  placeholder="Acme Corporation"
+                />
+              </div>
+              <div>
+                <Label htmlFor="contact_name">Contact Name</Label>
+                <Input
+                  id="contact_name"
+                  name="contact_name"
+                  required
+                  className="mt-2"
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <Label htmlFor="contact_email">Contact Email</Label>
+                <Input
+                  id="contact_email"
+                  name="contact_email"
+                  type="email"
+                  required
+                  className="mt-2"
+                  placeholder="john@example.com"
+                />
+              </div>
             </div>
-            <div>
-              <label
-                htmlFor="contact_email"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Contact Email
-              </label>
-              <input
-                id="contact_email"
-                name="contact_email"
-                type="email"
-                required
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="john@example.com"
-              />
+            <div className="flex items-center justify-end gap-4">
+              <Button asChild variant="outline">
+                <Link href="/organizations">Cancel</Link>
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Organization"}
+              </Button>
             </div>
-          </div>
-          <div className="flex items-center justify-end gap-4">
-            <Link
-              href="/organizations"
-              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {isSubmitting ? "Creating..." : "Create Organization"}
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  )
-} 
+  );
+}

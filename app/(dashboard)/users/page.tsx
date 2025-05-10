@@ -2,18 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { checkRole, getFromApi } from "@/lib/api-utils";
 import { notFound } from "next/navigation";
+import { Shield, User } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -48,7 +42,7 @@ export default async function UsersPage() {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
               User Management
@@ -61,61 +55,72 @@ export default async function UsersPage() {
           <UserCreateButton />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>System Administrators</CardTitle>
-            <CardDescription>
-              View and manage all admin users in the system
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <Card className="border shadow-sm">
+          <div className="divide-y">
             {users.length === 0 ? (
-              <div className="text-center py-6">
-                <p className="text-muted-foreground">No users found</p>
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <Shield className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                <h3 className="text-lg font-medium mb-1">No users found</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add your first administrator to get started.
+                </p>
+                <UserCreateButton />
               </div>
             ) : (
-              <Table>
-                <TableCaption>List of all administrator accounts</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            user.role === "super_admin" ? "default" : "outline"
-                          }
-                        >
-                          {user.role === "super_admin"
-                            ? "Super Admin"
-                            : "Admin"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {user.role !== "super_admin" && (
-                          <UserPromoteButton userId={user.id} />
-                        )}
-                        <UserDeleteButton userId={user.id} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <>
+                <div className="p-3">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">
+                            {user.name}
+                          </TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                user.role === "super_admin"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                              className={
+                                user.role === "super_admin"
+                                  ? "bg-primary hover:bg-primary text-primary-foreground"
+                                  : ""
+                              }
+                            >
+                              {user.role === "super_admin"
+                                ? "Super Admin"
+                                : "Admin"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {user.role !== "super_admin" && (
+                              <UserPromoteButton userId={user.id} />
+                            )}
+                            <UserDeleteButton userId={user.id} />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
-          </CardContent>
+          </div>
         </Card>
       </div>
     );

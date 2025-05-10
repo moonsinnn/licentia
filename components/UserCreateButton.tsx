@@ -1,33 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Plus, Loader2 } from "lucide-react"
-import { toast } from "sonner"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Loader2, User } from "lucide-react";
+import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
-import { Button } from "@/components/ui/button"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger
-} from "@/components/ui/dialog"
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 // Create user form schema
 const formSchema = z.object({
@@ -40,13 +40,13 @@ const formSchema = z.object({
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
-})
+});
 
 export function UserCreateButton() {
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Form definition
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,12 +55,12 @@ export function UserCreateButton() {
       email: "",
       password: "",
     },
-  })
-  
+  });
+
   // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    
+    setIsSubmitting(true);
+
     try {
       const response = await fetch("/api/users", {
         method: "POST",
@@ -68,30 +68,33 @@ export function UserCreateButton() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
-      })
-      
+      });
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create user")
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create user");
       }
-      
-      toast.success("User created successfully")
-      form.reset()
-      setIsOpen(false)
-      router.refresh() // Refresh the page to show the new user
+
+      toast.success("User created successfully");
+      form.reset();
+      setIsOpen(false);
+      router.refresh(); // Refresh the page to show the new user
     } catch (error) {
-      console.error("Error creating user:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to create user")
+      console.error("Error creating user:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create user"
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
+          <User className="h-4 w-4" />
           Add User
         </Button>
       </DialogTrigger>
@@ -102,7 +105,7 @@ export function UserCreateButton() {
             Create a new admin user with standard privileges.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -118,7 +121,7 @@ export function UserCreateButton() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="email"
@@ -132,7 +135,7 @@ export function UserCreateButton() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="password"
@@ -142,14 +145,12 @@ export function UserCreateButton() {
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Minimum 8 characters
-                  </FormDescription>
+                  <FormDescription>Minimum 8 characters</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <DialogFooter>
               <Button
                 type="button"
@@ -158,10 +159,7 @@ export function UserCreateButton() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
@@ -172,5 +170,5 @@ export function UserCreateButton() {
         </Form>
       </DialogContent>
     </Dialog>
-  )
-} 
+  );
+}

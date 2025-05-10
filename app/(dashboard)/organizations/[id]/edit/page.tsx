@@ -1,14 +1,16 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
-import { getFromApi } from "@/lib/api-utils"
-import OrganizationForm from "@/components/OrganizationForm"
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { getFromApi } from "@/lib/api-utils";
+import OrganizationForm from "@/components/OrganizationForm";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface OrganizationEditPageProps {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 interface Organization {
@@ -22,10 +24,12 @@ interface Organization {
 
 async function getOrganizationData(id: string) {
   try {
-    const response = await getFromApi<{ organization: Organization }>(`/api/organizations/${id}`);
+    const response = await getFromApi<{ organization: Organization }>(
+      `/api/organizations/${id}`
+    );
     return response.organization;
   } catch (error) {
-    console.error('Error fetching organization:', error);
+    console.error("Error fetching organization:", error);
     // Return fallback data if API request fails
     return {
       id,
@@ -38,28 +42,41 @@ async function getOrganizationData(id: string) {
   }
 }
 
-export default async function OrganizationEditPage({ params }: OrganizationEditPageProps) {
+export default async function OrganizationEditPage({
+  params,
+}: OrganizationEditPageProps) {
   const { id } = await params;
   const organization = await getOrganizationData(id);
 
   return (
     <div className="space-y-6">
       <div>
-        <Link 
-          href={`/organizations/${id}`} 
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="px-0 text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Organization
-        </Link>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight">Edit Organization</h1>
+          <Link
+            href={`/organizations/${id}`}
+            className="inline-flex items-center gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Organization
+          </Link>
+        </Button>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">
+          Edit Organization
+        </h1>
       </div>
 
       <div className="grid gap-6">
-        <div className="rounded-lg border p-6">
-          <OrganizationForm organization={organization} />
-        </div>
+        <Card className="shadow-sm">
+          <CardContent className="pt-6">
+            <OrganizationForm organization={organization} />
+          </CardContent>
+        </Card>
       </div>
     </div>
-  )
-} 
+  );
+}

@@ -8,10 +8,14 @@ import {
   User,
   Calendar,
   Key,
+  Plus,
 } from "lucide-react";
 import { getFromApi } from "@/lib/api-utils";
 import { OrganizationDeleteButton } from "@/components/OrganizationDeleteButton";
 import { LicenseDeleteButton } from "@/components/LicenseDeleteButton";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface OrganizationViewPageProps {
   params: Promise<{
@@ -98,127 +102,159 @@ export default async function OrganizationViewPage({
             {organization.name}
           </h1>
           <div className="flex items-center gap-2">
-            <Link
-              href={`/organizations/${id}/edit`}
-              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
-            >
-              Edit Organization
-            </Link>
+            <Button asChild variant="outline">
+              <Link href={`/organizations/${id}/edit`}>Edit Organization</Link>
+            </Button>
             <OrganizationDeleteButton organizationId={id} variant="button" />
-            <Link
-              href={`/licenses/new?organization=${id}`}
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
-            >
-              Add License
-            </Link>
+            <Button asChild>
+              <Link href={`/licenses/new?organization=${id}`}>
+                <Plus className="h-4 w-4" />
+                Add License
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-lg border p-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Organization Details
-          </h2>
-          <dl className="space-y-4">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                <User className="h-4 w-4" />
-                Contact Name
-              </dt>
-              <dd>{organization.contact_name}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                <Mail className="h-4 w-4" />
-                Contact Email
-              </dt>
-              <dd>
-                <a
-                  href={`mailto:${organization.contact_email}`}
-                  className="text-primary hover:underline"
-                >
-                  {organization.contact_email}
-                </a>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                Created
-              </dt>
-              <dd>{new Date(organization.created_at).toLocaleString()}</dd>
-            </div>
-          </dl>
-        </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Building2 className="h-5 w-5 text-primary" />
+              Organization Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="space-y-4">
+              <div className="grid gap-1">
+                <dt className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  Contact Name
+                </dt>
+                <dd className="text-foreground font-medium">
+                  {organization.contact_name}
+                </dd>
+              </div>
+              <div className="grid gap-1">
+                <dt className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  Contact Email
+                </dt>
+                <dd>
+                  <a
+                    href={`mailto:${organization.contact_email}`}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    {organization.contact_email}
+                  </a>
+                </dd>
+              </div>
+              <div className="grid gap-1">
+                <dt className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  Created
+                </dt>
+                <dd className="text-foreground">
+                  {new Date(organization.created_at).toLocaleString()}
+                </dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-lg border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Key className="h-5 w-5" />
-              Licenses
-            </h2>
-            <Link
-              href={`/licenses/new?organization=${id}`}
-              className="text-sm text-primary hover:underline"
-            >
-              Add new license
-            </Link>
-          </div>
-
-          {licenses && licenses.length > 0 ? (
-            <div className="space-y-4">
-              {licenses.map((license) => (
-                <div key={String(license.id)} className="border rounded-md p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <Link
-                      href={`/licenses/${license.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {license.license_key}
-                    </Link>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex h-5 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          license.is_active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {license.is_active ? "Active" : "Inactive"}
-                      </span>
-                      <LicenseDeleteButton licenseId={license.id} />
-                    </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    <div>Product: {license.product.name}</div>
-                    <div>
-                      Created:{" "}
-                      {new Date(license.created_at).toLocaleDateString()}
-                    </div>
-                    <div>
-                      Expires:{" "}
-                      {license.expires_at
-                        ? new Date(license.expires_at).toLocaleDateString()
-                        : "Never"}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6 text-muted-foreground">
-              <p>No licenses found for this organization</p>
-              <Link
-                href={`/licenses/new?organization=${id}`}
-                className="mt-2 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Key className="h-5 w-5 text-primary" />
+                Licenses
+              </CardTitle>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs"
               >
-                Create first license
-              </Link>
+                <Link href={`/licenses/new?organization=${id}`}>
+                  <Plus className="h-3.5 w-3.5" />
+                  Add new license
+                </Link>
+              </Button>
             </div>
-          )}
-        </div>
+          </CardHeader>
+          <CardContent>
+            {licenses && licenses.length > 0 ? (
+              <div className="space-y-4">
+                {licenses.map((license) => (
+                  <div
+                    key={String(license.id)}
+                    className="border rounded-md p-4 shadow-sm"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <Link
+                        href={`/licenses/${license.id}`}
+                        className="font-semibold hover:underline text-foreground"
+                      >
+                        {license.license_key}
+                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            license.is_active ? "default" : "destructive"
+                          }
+                          className={
+                            license.is_active
+                              ? "bg-green-100 hover:bg-green-100 text-green-800"
+                              : ""
+                          }
+                        >
+                          {license.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                        <LicenseDeleteButton licenseId={license.id} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium">Product:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {license.product.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium">Created:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(license.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium">Expires:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {license.expires_at
+                            ? new Date(license.expires_at).toLocaleDateString()
+                            : "Never"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Key className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                <h3 className="text-lg font-medium mb-1">No licenses found</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  This organization doesn't have any licenses yet.
+                </p>
+                <Button asChild>
+                  <Link href={`/licenses/new?organization=${id}`}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Create first license
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
